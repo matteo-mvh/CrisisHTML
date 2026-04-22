@@ -3,129 +3,630 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Crisis Mode</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css" />
+  <title>Crisis Mode: Startup Pressure Simulator</title>
+  <style>
+    :root {
+      --bg: #070b1a;
+      --bg-soft: #0e1530;
+      --card: #111a39;
+      --line: #2a3a78;
+      --text: #edf2ff;
+      --muted: #a9b7e8;
+      --accent: #6f92ff;
+      --accent-2: #845eff;
+      --danger: #ff5f74;
+      --warn: #ffcd66;
+      --ok: #66df9a;
+      --rep: #57d1ff;
+      --cash: #82e27a;
+      --morale: #ffc06c;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      color: var(--text);
+      background: radial-gradient(circle at top, #1c2e63 0%, var(--bg) 55%);
+      min-height: 100vh;
+    }
+
+    .app {
+      width: min(1080px, 94vw);
+      margin: 1.2rem auto 2rem;
+      display: grid;
+      gap: .9rem;
+    }
+
+    .screen { display: none; }
+    .screen.active { display: grid; gap: .9rem; }
+
+    .card {
+      background: linear-gradient(180deg, #17224a, var(--card));
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 1rem;
+      box-shadow: 0 10px 28px rgba(0,0,0,.28);
+    }
+
+    h1,h2,h3,p { margin: 0; }
+    .eyebrow { text-transform: uppercase; letter-spacing: .08em; color: #99b1ff; font-size: .76rem; margin-bottom: .2rem; }
+    .subtitle { color: var(--muted); line-height: 1.5; }
+
+    .btn { border: 0; border-radius: 10px; padding: .7rem .95rem; font: inherit; font-weight: 650; cursor: pointer; }
+    .btn-primary { background: linear-gradient(180deg, var(--accent), #5576ea); color: #f7f9ff; }
+    .btn-ghost { background: transparent; color: var(--text); border: 1px solid #405393; }
+
+    .startup-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(160px,1fr)); gap: .55rem; margin-top: .85rem; }
+    .type-btn { background: #11193a; border: 1px solid #3a4f90; color: #e8eeff; text-align: left; }
+    .type-btn.active { border-color: #a8bbff; box-shadow: 0 0 0 2px rgba(168,187,255,.22) inset; }
+
+    .top {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr;
+      gap: .7rem;
+    }
+
+    .hud { display: grid; grid-template-columns: repeat(4,1fr); gap: .55rem; }
+    .pill { padding: .55rem .65rem; border-radius: 10px; border: 1px solid #32457f; background: #0f1737; }
+    .pill strong { display: block; font-size: 1.1rem; margin-top: .2rem; }
+
+    .timer strong { color: var(--warn); }
+    .timer.low { animation: pulse .85s infinite; border-color: #8d2838; }
+    @keyframes pulse { 0%,100%{ box-shadow:0 0 0 0 rgba(255,95,116,.05);} 50%{ box-shadow:0 0 0 4px rgba(255,95,116,.2);} }
+
+    .metrics { display: grid; grid-template-columns: repeat(3,1fr); gap: .55rem; }
+    .metric { background: rgba(8,12,29,.35); border: 1px solid #2d3d75; border-radius: 12px; padding: .65rem; }
+    .metric-head { display:flex; justify-content:space-between; margin-bottom: .35rem; }
+    .meter { height: 10px; border-radius: 999px; background: #0b1230; overflow: hidden; }
+    .fill { height: 100%; transition: width .3s ease; }
+    .rep{ background: linear-gradient(90deg, #2d9bc7, var(--rep)); }
+    .cash{ background: linear-gradient(90deg, #2f9d3d, var(--cash)); }
+    .morale{ background: linear-gradient(90deg, #c68d35, var(--morale)); }
+    .voice { color: #c9d6ff; font-style: italic; font-size: .87rem; margin-top: .35rem; min-height: 2.2em; }
+
+    .board { display:grid; grid-template-columns: 1.3fr .8fr; gap: .65rem; }
+    .scenario p { color: #dce5ff; line-height: 1.5; margin-top: .4rem; }
+    .choices { display:grid; gap: .55rem; margin-top: .7rem; }
+    .choice { text-align:left; background: #101938; color: #eaf0ff; border: 1px solid #35508d; }
+    .choice small { display:block; color:#a7b7e7; margin-top:.2rem; }
+    .choice:disabled { opacity: .7; }
+
+    .feed-wrap { display:grid; gap: .55rem; max-height: 420px; overflow: auto; }
+    .feed-item { border:1px solid #3a4e8b; background:#0f1838; border-radius:10px; padding:.55rem .6rem; font-size:.9rem; }
+    .feed-item.alert { border-color:#8d2939; background:#281622; }
+    .feed-item.good { border-color:#2f7f5e; background:#102921; }
+
+    .carry { border-left: 3px solid var(--warn); padding-left: .6rem; color: #ffe4b1; margin-top: .5rem; }
+    .hidden { display:none; }
+
+    .summary-list { margin: 0; padding-left: 1rem; color:#dae4ff; line-height:1.5; }
+
+    @media (max-width: 900px){
+      .top,.board,.hud,.metrics { grid-template-columns: 1fr; }
+    }
+  </style>
 </head>
 <body>
-  <main class="app-shell" id="app">
-    <section id="start-screen" class="screen card active" aria-live="polite">
-      <p class="eyebrow">Serious Game Prototype</p>
-      <h1>Crisis Mode</h1>
-      <p class="subtitle">
-        You are the founder of a fast-growing startup facing cascading crises.
-        Balance <strong>Reputation</strong>, <strong>Cash</strong>, and <strong>Team Morale</strong>
-        through five pressure rounds.
-      </p>
-
-      <div class="actions-row">
-        <button id="start-btn" class="btn btn-primary">Start Game</button>
-        <button id="how-btn" class="btn btn-ghost" aria-expanded="false" aria-controls="how-panel">How to Play</button>
+  <main class="app">
+    <section id="start" class="screen active card">
+      <p class="eyebrow">Interactive Prototype</p>
+      <h1>Crisis Mode: Founder Pressure Lab</h1>
+      <p class="subtitle">Lead a startup through uncertain, time-critical crises. Every decision trades off <strong>Money</strong>, <strong>Team Morale</strong>, and <strong>Reputation</strong>, and some consequences arrive later.</p>
+      <h3 style="margin-top:.8rem;">Choose startup type</h3>
+      <div id="type-grid" class="startup-grid"></div>
+      <div style="display:flex;gap:.6rem;flex-wrap:wrap;margin-top:.5rem;">
+        <button id="start-btn" class="btn btn-primary">Start Simulation</button>
+        <button id="how-btn" class="btn btn-ghost">How it works</button>
       </div>
-
-      <div id="how-panel" class="how-panel" hidden>
-        <ul>
-          <li>Choose one action each round. Every choice has trade-offs.</li>
-          <li>Some choices create <strong>delayed consequences</strong> in later rounds.</li>
-          <li>If any core metric hits 0, your startup collapses immediately.</li>
-          <li>Survive all 5 rounds to win and receive your leadership profile.</li>
+      <div id="how" class="card hidden" style="padding:.75rem;background:#0e1736;">
+        <ul class="summary-list">
+          <li>7 randomized main scenarios appear each run, weighted by startup type.</li>
+          <li>Each scenario has a real timer; timeout causes a missed-decision penalty.</li>
+          <li>Fast action can help, but weak choices still hurt later.</li>
+          <li>Incoming messages and interruptions add pressure and minor metric shifts.</li>
+          <li>If any metric reaches 0, the company collapses immediately.</li>
         </ul>
       </div>
     </section>
 
-    <section id="game-screen" class="screen" aria-live="polite">
-      <header class="top-bar card">
-        <div>
-          <p class="eyebrow">Founder Dashboard</p>
-          <h2 id="round-label">Round 1 of 5</h2>
+    <section id="game" class="screen">
+      <section class="top">
+        <div class="card">
+          <p class="eyebrow">Founder Command Desk</p>
+          <h2 id="round-label">Scenario 1 / 7</h2>
+          <p id="flavor" class="subtitle"></p>
         </div>
-        <div class="badge" id="company-state">Startup Live</div>
-      </header>
-
-      <section class="metrics-grid card" aria-label="Company metrics">
-        <article class="metric">
-          <div class="metric-head">
-            <span>Reputation</span>
-            <strong id="rep-value">60</strong>
-          </div>
-          <div class="meter"><div id="rep-bar" class="fill rep"></div></div>
-        </article>
-        <article class="metric">
-          <div class="metric-head">
-            <span>Cash</span>
-            <strong id="cash-value">60</strong>
-          </div>
-          <div class="meter"><div id="cash-bar" class="fill cash"></div></div>
-        </article>
-        <article class="metric">
-          <div class="metric-head">
-            <span>Team Morale</span>
-            <strong id="morale-value">60</strong>
-          </div>
-          <div class="meter"><div id="morale-bar" class="fill morale"></div></div>
-        </article>
+        <div class="hud">
+          <div class="pill"><span>Startup Type</span><strong id="type-label">—</strong></div>
+          <div class="pill"><span>In-game clock</span><strong id="clock">Day 1 • 09:00</strong></div>
+          <div class="pill timer" id="timer-pill"><span>Decision timer</span><strong id="timer">20s</strong></div>
+          <div class="pill"><span>Status</span><strong id="status">Operational</strong></div>
+        </div>
       </section>
 
-      <section class="card crisis-card">
-        <p class="eyebrow">Current Crisis</p>
-        <h3 id="crisis-title"></h3>
-        <p id="crisis-description"></p>
-        <div id="carryover-note" class="carryover hidden"></div>
+      <section class="metrics card">
+        <article class="metric"><div class="metric-head"><span>Reputation</span><strong id="rep-v">60</strong></div><div class="meter"><div id="rep-b" class="fill rep"></div></div><p id="rep-voice" class="voice"></p></article>
+        <article class="metric"><div class="metric-head"><span>Money</span><strong id="cash-v">60</strong></div><div class="meter"><div id="cash-b" class="fill cash"></div></div><p id="cash-voice" class="voice"></p></article>
+        <article class="metric"><div class="metric-head"><span>Team Morale</span><strong id="morale-v">60</strong></div><div class="meter"><div id="morale-b" class="fill morale"></div></div><p id="morale-voice" class="voice"></p></article>
       </section>
 
-      <section class="card choices-card">
-        <p class="eyebrow">Your Decision</p>
-        <div id="choices-container" class="choices-list" role="group" aria-label="Decision choices"></div>
+      <section class="board">
+        <div class="card scenario">
+          <p class="eyebrow">Main crisis</p>
+          <h3 id="title"></h3>
+          <p id="desc"></p>
+          <div id="carry" class="carry hidden"></div>
+          <div id="choices" class="choices"></div>
+        </div>
+        <div class="card">
+          <p class="eyebrow">Live updates</p>
+          <div id="feed" class="feed-wrap"></div>
+        </div>
       </section>
 
-      <section id="feedback-card" class="card feedback hidden" aria-live="assertive">
-        <p class="eyebrow">Immediate Consequence</p>
-        <h4 id="feedback-title">Decision Logged</h4>
-        <p id="feedback-text"></p>
-        <div id="feedback-delta" class="delta"></div>
-        <button id="continue-btn" class="btn btn-primary">Continue</button>
+      <section id="result-card" class="card hidden">
+        <p class="eyebrow">Outcome</p>
+        <h3 id="result-title"></h3>
+        <p id="result-text" class="subtitle"></p>
+        <p id="result-delta" style="margin-top:.45rem;color:#d4e0ff;"></p>
+        <button id="continue" class="btn btn-primary" style="margin-top:.6rem;">Continue</button>
       </section>
     </section>
 
-    <section id="end-screen" class="screen card" aria-live="polite">
+    <section id="end" class="screen card">
       <p class="eyebrow">Debrief</p>
       <h2 id="end-title"></h2>
-      <p id="end-summary" class="subtitle"></p>
-
-      <section class="debrief-grid">
-        <article class="debrief-panel">
-          <h3>Final Metrics</h3>
-          <ul id="final-metrics" class="simple-list"></ul>
-        </article>
-
-        <article class="debrief-panel">
-          <h3>Leadership Profile</h3>
-          <p id="leadership-profile"></p>
-        </article>
+      <p id="end-text" class="subtitle"></p>
+      <section class="card" style="background:#0f1738;">
+        <h3>Key decisions</h3>
+        <ol id="history" class="summary-list"></ol>
       </section>
-
-      <section class="debrief-panel">
-        <h3>Decision History</h3>
-        <ol id="decision-history" class="history-list"></ol>
+      <section class="card" style="background:#0f1738;">
+        <h3>Major turning points</h3>
+        <ul id="turns" class="summary-list"></ul>
       </section>
-
-      <section class="debrief-panel">
-        <h3>Turning Points</h3>
-        <ul id="turning-points" class="simple-list"></ul>
+      <section class="card" style="background:#0f1738;">
+        <h3>Leadership profile</h3>
+        <p id="profile" class="subtitle"></p>
+        <p id="final-metrics" style="margin-top:.45rem;color:#d7e2ff;"></p>
       </section>
-
-      <section class="debrief-panel reflection">
-        <h3>Reflection Prompt</h3>
-        <p>What would you do differently?</p>
-        <textarea id="reflection" rows="4" placeholder="Write your founder reflection here..."></textarea>
+      <section class="card" style="background:#0f1738;">
+        <h3>Reflection</h3>
+        <p class="subtitle">Which trade-off would you reverse if you had one extra week and why?</p>
       </section>
-
-      <button id="restart-btn" class="btn btn-primary">Play Again</button>
+      <button id="restart" class="btn btn-primary">Play Again</button>
     </section>
   </main>
 
-  <script src="script.js"></script>
+  <script>
+    const TOTAL_ROUNDS = 7;
+    const MAX = 100;
+
+    const startupTypes = {
+      tech: { name: "Tech Startup", flavor: "Scale pressure, reliability incidents, and velocity trade-offs define your week." },
+      green: { name: "Green Startup", flavor: "Sustainability claims, suppliers, and regulatory scrutiny shape your crises." },
+      health: { name: "Health Startup", flavor: "Patient safety, compliance, and clinical credibility raise every decision's stakes." },
+      creative: { name: "Creative Startup", flavor: "Client expectations, creative integrity, and public sentiment drive momentum." },
+      fintech: { name: "Fintech Startup", flavor: "Trust, liquidity, compliance, and fraud concerns can shift by the hour." }
+    };
+
+    const baseScenarios = [
+      mk("employee-resignation", ["tech","creative"], "Your senior product manager resigns", "They managed roadmap rituals and cross-team alignment. Their departure leaks to Slack and rumors spread.", 18, 5,
+        ch("Run a transparent transition plan and postpone one feature", { reputation: -2, cash: -6, morale: +6 }, { transparency:2, empathy:2, decisiveness:1 }, [f("handoff_doc",2,{cash:+3,morale:+2},"Structured transition reduced later delivery losses.")], "You slowed output but stabilized trust."),
+        ch("Keep resignation private and redistribute work quietly", { reputation:+1, cash:+2, morale:-7 }, { transparency:-2, decisiveness:1, risk:1 }, [f("hidden_strain",2,{morale:-6,reputation:-2},"Unseen workload imbalance triggered burnout complaints.")], "Short-term calm; hidden pressure increased."),
+        ch("Hire an expensive interim lead immediately", { reputation:+1, cash:-12, morale:+2 }, { decisiveness:2, prioritization:1 }, [f("costly_fix",3,{cash:-5},"The interim contract overran budget.")], "Execution recovered quickly, runway tightened.")
+      ),
+      mk("investor-pressure", ["tech","fintech","green"], "Investor pushes for aggressive growth numbers", "A key investor calls for a faster expansion narrative before the next board check-in.", 16, 4,
+        ch("Reset expectations with realistic milestones", { reputation:+2, cash:-3, morale:+4 }, { transparency:2, ethics:1, risk:-1 }, [f("credible_board",2,{reputation:+3},"Measured targets improved board confidence later.")], "You protected credibility over hype."),
+        ch("Promise an ambitious target and push sales discounts", { reputation:+1, cash:+6, morale:-4 }, { risk:2, decisiveness:1, ethics:-1 }, [f("margin_damage",2,{cash:-7},"Discount-heavy growth hurt unit economics.")], "Numbers popped, margin risk increased."),
+        ch("Delay board update and buy time for better data", { reputation:-4, cash:+1, morale:-1 }, { transparency:-2, risk:-1 }, [f("trust_gap",1,{reputation:-4},"Silence was interpreted as instability.")], "You gained time but lost narrative control.")
+      ),
+      mk("server-crash", ["tech","fintech","health"], "Core platform crashes during peak usage", "Payment or booking flows fail for 34 minutes and support queues surge.", 14, 6,
+        ch("Declare incident publicly with updates every 15 minutes", { reputation:+2, cash:-5, morale:+2 }, { transparency:2, ethics:1 }, [f("incident_trust",2,{reputation:+2},"Clear incident comms preserved trust.")], "Transparent comms softened anger."),
+        ch("Stay quiet until full root cause is known", { reputation:-5, cash:-2, morale:-3 }, { transparency:-2, risk:-1 }, [f("media_story",2,{reputation:-4},"Silence fueled a negative external story.")], "Less noise now, more backlash later."),
+        ch("Bring in emergency consultants and hotfix fast", { reputation:+1, cash:-10, morale:+3 }, { decisiveness:2, prioritization:2 }, [f("consultant_dependency",3,{cash:-4},"Follow-on consulting invoices arrived.")], "Fast stabilization at high cost.")
+      ),
+      mk("data-leak", ["tech","health","fintech"], "Suspicion of a data leak", "Screenshots online suggest limited user data exposure. Confirmation is still pending.", 13, 6,
+        ch("Notify potentially affected users immediately", { reputation:-2, cash:-8, morale:+3 }, { ethics:3, transparency:2, empathy:1 }, [f("trust_recovery",3,{reputation:+6},"Early disclosure improved long-term credibility.")], "Initial pain, stronger trust later."),
+        ch("Wait for legal certainty before public notice", { reputation:-1, cash:-3, morale:-2 }, { risk:-1, transparency:-1 }, [f("late_notice",2,{reputation:-5},"Late notice looked evasive.")], "You reduced immediate legal exposure."),
+        ch("Deny and challenge claim credibility", { reputation:+1, cash:-1, morale:-5 }, { risk:2, ethics:-3, transparency:-3 }, [f("credibility_crash",2,{reputation:-8,cash:-3},"Evidence contradicted your denial.")], "Defensive narrative raised future downside.")
+      ),
+      mk("angry-client", ["creative","tech","health"], "Major client threatens to leave", "They cite missed milestones and poor communication, and demand an answer today.", 17, 5,
+        ch("Call client leadership and renegotiate with milestones", { reputation:+3, cash:-4, morale:+2 }, { empathy:2, prioritization:2 }, [f("saved_account",2,{cash:+5},"Client stayed after visible recovery steps.")], "You converted conflict into accountability."),
+        ch("Offer steep discount with no process change", { reputation:-2, cash:-8, morale:-2 }, { risk:-1, decisiveness:1 }, [f("repeat_issue",2,{reputation:-4},"Service issues repeated despite discount.")], "Churn risk dropped briefly, quality debt remained."),
+        ch("Push back publicly and call demands unreasonable", { reputation:-8, cash:+1, morale:-4 }, { risk:2, empathy:-2, ethics:-1 }, [f("public_dispute",1,{reputation:-3},"The dispute expanded on social channels.")], "Assertive tone increased PR damage.")
+      ),
+      mk("pr-backlash", ["creative","green","fintech"], "PR backlash accelerates on social media", "A clipped statement about your company goes viral with negative context.", 15, 5,
+        ch("Post a calm clarification and own your miss", { reputation:+2, cash:-2, morale:+2 }, { transparency:2, ethics:2 }, [f("reset_narrative",2,{reputation:+2},"Consistent follow-up rebuilt sentiment.")], "You slowed backlash with accountability."),
+        ch("Ignore online noise and focus on shipping", { reputation:-4, cash:+2, morale:-1 }, { prioritization:1, transparency:-1 }, [f("silence_cost",2,{reputation:-4},"Silence was interpreted as indifference.")], "You protected focus, lost narrative."),
+        ch("Blame critics and mobilize loyal users", { reputation:-6, cash:+1, morale:+1 }, { risk:2, empathy:-2 }, [f("polarized_audience",2,{reputation:-2,morale:-2},"Community became polarized and exhausting.")], "Energy rose but trust fragmented.")
+      ),
+      mk("burnout", ["tech","health","creative"], "Team burnout signs become explicit", "Managers report attrition risk, reduced output, and emotional fatigue.", 20, 4,
+        ch("Trim scope and enforce recovery days", { reputation:+1, cash:-5, morale:+8 }, { empathy:3, prioritization:2 }, [f("retention_gain",2,{morale:+4},"Sustainable pace improved retention.")], "You traded speed for people stability."),
+        ch("Push through one last sprint", { reputation:+1, cash:+4, morale:-10 }, { decisiveness:2, risk:2, empathy:-2 }, [f("burnout_compound",2,{morale:-6,reputation:-2},"Extended crunch reduced quality and trust.")], "Output rose, exhaustion deepened."),
+        ch("Outsource overflow work", { reputation:0, cash:-9, morale:+2 }, { prioritization:1, risk:1 }, [f("handoff_noise",2,{reputation:-2},"External handoffs caused inconsistency.")], "Pressure eased internally, quality variance increased.")
+      ),
+      mk("deadline", ["tech","creative","green"], "Critical product deadline will be missed", "Launch prep is behind and partners are expecting a public reveal.", 14, 5,
+        ch("Announce revised date and explain quality reasons", { reputation:+1, cash:-4, morale:+3 }, { transparency:2, ethics:1 }, [f("quality_win",2,{reputation:+2},"Stable release improved customer confidence.")], "You protected reliability."),
+        ch("Ship partial product to stay on date", { reputation:-2, cash:+4, morale:-3 }, { risk:1, decisiveness:1 }, [f("partial_backlash",2,{reputation:-4,cash:-2},"Customers criticized incomplete experience.")], "Schedule held, expectations broke."),
+        ch("Cut QA and force launch", { reputation:+1, cash:+6, morale:-6 }, { risk:3, ethics:-2 }, [f("bug_wave",1,{reputation:-6,cash:-4,morale:-2},"Post-launch defects dominated support channels.")], "Short-term win became firefighting.")
+      ),
+      mk("supplier-failure", ["green","health","creative"], "Supplier fails with no notice", "A critical vendor misses delivery and alternatives are expensive or slower.", 18, 4,
+        ch("Pay premium for reliable backup supplier", { reputation:+1, cash:-9, morale:+2 }, { decisiveness:2, prioritization:2 }, [f("cash_strain",2,{cash:-3},"Premium logistics fees continued.")], "Continuity preserved at financial cost."),
+        ch("Wait 48 hours for original supplier recovery", { reputation:-3, cash:+1, morale:-2 }, { risk:-1, decisiveness:-1 }, [f("client_delay",1,{reputation:-3,cash:-2},"Client timelines slipped.")], "Cash preserved, commitments weakened."),
+        ch("Switch to cheaper unverified supplier", { reputation:-2, cash:+5, morale:-1 }, { risk:2, ethics:-1 }, [f("quality_claim",2,{reputation:-5,cash:-3},"Defect claims appeared after shipment.")], "Savings now, quality risk later.")
+      ),
+      mk("cofounder-disagreement", ["tech","fintech","creative"], "Cofounders clash over strategy", "Leadership disagreement is now visible to managers and leaking confidence.", 19, 4,
+        ch("Hold mediated strategy session and publish one plan", { reputation:+1, cash:-3, morale:+5 }, { empathy:2, transparency:1, ethics:1 }, [f("alignment_gain",2,{morale:+3},"Shared direction reduced internal noise.")], "You slowed conflict escalation."),
+        ch("Override cofounder and force your direction", { reputation:-2, cash:+2, morale:-5 }, { decisiveness:2, empathy:-2, risk:1 }, [f("leadership_fracture",2,{morale:-4,reputation:-2},"Leadership fracture became visible externally.")], "Execution sped up, trust dropped."),
+        ch("Avoid decision to keep peace", { reputation:-3, cash:-1, morale:-3 }, { decisiveness:-2, risk:-1 }, [f("drift_cost",1,{cash:-3,reputation:-2},"Strategic drift slowed sales and delivery.")], "Conflict stayed quiet, direction blurred.")
+      ),
+      mk("cashflow", ["fintech","tech","green"], "Cash flow emergency", "Receivables are late and payroll is due within days.", 12, 6,
+        ch("Secure short bridge financing", { reputation:0, cash:+10, morale:+1 }, { risk:1, decisiveness:2 }, [f("debt_pressure",3,{cash:-5},"Bridge terms increased near-term burden.")], "Runway restored, debt pressure added."),
+        ch("Cut discretionary spend and executive salaries", { reputation:+2, cash:+6, morale:+3 }, { ethics:2, empathy:1, prioritization:2 }, [f("lean_recovery",2,{cash:+2},"Cost discipline improved burn stability.")], "Pain was shared, trust improved."),
+        ch("Delay payroll by one week", { reputation:-5, cash:+8, morale:-9 }, { ethics:-3, risk:2 }, [f("talent_shock",1,{morale:-6,reputation:-3},"Payroll delay triggered resignations.")], "Liquidity bought at cultural cost.")
+      ),
+      mk("legal-compliance", ["health","fintech","green"], "Legal/compliance issue escalates", "Regulatory counsel flags a process gap that could trigger penalties.", 13, 6,
+        ch("Pause risky operations and self-report", { reputation:+1, cash:-7, morale:+2 }, { ethics:3, transparency:2 }, [f("regulator_trust",2,{reputation:+3},"Proactive cooperation reduced external pressure.")], "Short-term slowdown, long-term protection."),
+        ch("Quietly patch process and avoid disclosure", { reputation:-2, cash:-2, morale:-2 }, { transparency:-2, risk:1 }, [f("audit_hit",2,{reputation:-6,cash:-4},"Audit findings amplified penalties.")], "You minimized disruption, increased downside."),
+        ch("Challenge regulator interpretation publicly", { reputation:-4, cash:+1, morale:-1 }, { risk:2, decisiveness:1, ethics:-1 }, [f("legal_spend",2,{cash:-6,reputation:-2},"Legal dispute became expensive.")], "Strong stance with uncertain payoff.")
+      )
+    ];
+
+    function mk(id, tags, title, description, seconds, urgency, ...choices) { return { id, tags, title, description, seconds, urgency, choices }; }
+    function ch(text, effects, traits, consequences, feedback) { return { text, effects, traits, consequences, feedback }; }
+    function f(flag, after, effects, note) { return { flag, after, effects, note }; }
+
+    const quickEvents = [
+      { t: "New email from investor: 'Need revised forecast before tonight.'", effects: { reputation: -1 } },
+      { t: "Slack from engineer: 'Patch is ready but needs review now.'", effects: { morale: +1 } },
+      { t: "Support tickets spike in the last 20 minutes.", effects: { reputation: -2, cash: -1 } },
+      { t: "Client asks: 'Can you confirm timeline by EOD?'", effects: { reputation: -1 } },
+      { t: "Social complaints are increasing in regional channel.", effects: { reputation: -2 } },
+      { t: "Emergency invoice reminder arrives.", effects: { cash: -2 } },
+      { t: "Team lead posts appreciation for clear direction.", effects: { morale: +2 } },
+      { t: "A partner offers a short extension after quick update.", effects: { reputation: +1 } }
+    ];
+
+    const state = {
+      chosenType: "tech",
+      round: 1,
+      pool: [],
+      metrics: { reputation: 60, cash: 60, morale: 60 },
+      traits: { transparency: 0, empathy: 0, decisiveness: 0, ethics: 0, risk: 0, prioritization: 0 },
+      flags: new Set(),
+      delayed: [],
+      history: [],
+      turning: [],
+      clockHour: 9,
+      day: 1,
+      activeScenario: null,
+      timer: null,
+      timerLeft: 0,
+      eventTimer: null,
+      pending: false,
+      gameOver: false,
+      result: ""
+    };
+
+    const $ = (id) => document.getElementById(id);
+    const refs = {
+      start: $("start"), game: $("game"), end: $("end"),
+      typeGrid: $("type-grid"), startBtn: $("start-btn"), howBtn: $("how-btn"), how: $("how"),
+      round: $("round-label"), flavor: $("flavor"), typeLabel: $("type-label"), clock: $("clock"), timer: $("timer"), timerPill: $("timer-pill"), status: $("status"),
+      repV: $("rep-v"), cashV: $("cash-v"), moraleV: $("morale-v"), repB: $("rep-b"), cashB: $("cash-b"), moraleB: $("morale-b"),
+      repVoice: $("rep-voice"), cashVoice: $("cash-voice"), moraleVoice: $("morale-voice"),
+      title: $("title"), desc: $("desc"), carry: $("carry"), choices: $("choices"), feed: $("feed"),
+      resultCard: $("result-card"), resultTitle: $("result-title"), resultText: $("result-text"), resultDelta: $("result-delta"), continue: $("continue"),
+      endTitle: $("end-title"), endText: $("end-text"), history: $("history"), turns: $("turns"), profile: $("profile"), finalMetrics: $("final-metrics"), restart: $("restart")
+    };
+
+    function clamp(v){ return Math.max(0, Math.min(MAX, v)); }
+    function shuffle(arr){ const a=[...arr]; for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+    function metricText(e){ return Object.entries(e).filter(([,v])=>v).map(([k,v])=>`${k} ${v>0?"+":""}${v}`).join(" • ") || "No direct metric change."; }
+
+    function addFeed(text, tone="") {
+      const d = document.createElement("div");
+      d.className = `feed-item ${tone}`;
+      d.textContent = `${fmtClock()} — ${text}`;
+      refs.feed.prepend(d);
+      while (refs.feed.children.length > 14) refs.feed.removeChild(refs.feed.lastChild);
+    }
+
+    function applyEffects(effects, source = "") {
+      const changed = { reputation:0, cash:0, morale:0 };
+      for (const m of Object.keys(state.metrics)) {
+        const delta = effects?.[m] || 0;
+        if (!delta) continue;
+        state.metrics[m] = clamp(state.metrics[m] + delta);
+        changed[m] = delta;
+      }
+      if (source) addFeed(`${source} (${metricText(changed)})`, Object.values(changed).some(v=>v<0)?"alert":"good");
+      return changed;
+    }
+
+    function applyTraits(t = {}) { Object.entries(t).forEach(([k,v]) => state.traits[k] += v); }
+
+    function fmtClock() {
+      const h = String(state.clockHour % 24).padStart(2, "0");
+      return `Day ${state.day} • ${h}:00`;
+    }
+
+    function advanceTime(hours) {
+      let total = state.clockHour + hours;
+      while (total >= 24) { total -= 24; state.day += 1; }
+      state.clockHour = total;
+      refs.clock.textContent = fmtClock();
+    }
+
+    function statusLabel() {
+      const min = Math.min(state.metrics.reputation, state.metrics.cash, state.metrics.morale);
+      if (min <= 20) return "Critical";
+      if (min <= 40) return "Fragile";
+      return "Operational";
+    }
+
+    function voiceFor(metric, value) {
+      if (metric === "cash") return value < 25 ? "Finance: 'Runway is shrinking fast.'" : value < 45 ? "Finance: 'We need sharper spending control.'" : value > 75 ? "Finance: 'Cash buffer gives us choices.'" : "Finance: 'We can breathe, but stay disciplined.'";
+      if (metric === "morale") return value < 25 ? "Team: 'We're close to breaking point.'" : value < 45 ? "Team: 'Fatigue is showing in every sprint.'" : value > 75 ? "Team: 'We're tired but energized.'" : "Team: 'We can still rally together.'";
+      return value < 25 ? "Comms: 'This is becoming a PR disaster.'" : value < 45 ? "Comms: 'Trust is fragile right now.'" : value > 75 ? "Comms: 'People still trust us.'" : "Comms: 'Our story is still defensible.'";
+    }
+
+    function renderMetrics() {
+      refs.repV.textContent = state.metrics.reputation; refs.cashV.textContent = state.metrics.cash; refs.moraleV.textContent = state.metrics.morale;
+      refs.repB.style.width = `${state.metrics.reputation}%`; refs.cashB.style.width = `${state.metrics.cash}%`; refs.moraleB.style.width = `${state.metrics.morale}%`;
+      refs.repVoice.textContent = voiceFor("rep", state.metrics.reputation);
+      refs.cashVoice.textContent = voiceFor("cash", state.metrics.cash);
+      refs.moraleVoice.textContent = voiceFor("morale", state.metrics.morale);
+      refs.status.textContent = statusLabel();
+    }
+
+    function randomEventTick() {
+      if (state.pending || state.gameOver) return;
+      if (Math.random() < 0.42) {
+        const e = quickEvents[Math.floor(Math.random() * quickEvents.length)];
+        applyEffects(e.effects, e.t);
+        renderMetrics();
+        collapseCheck();
+      }
+    }
+
+    function startEventStream() {
+      clearInterval(state.eventTimer);
+      state.eventTimer = setInterval(randomEventTick, 4300);
+    }
+
+    function stopTimers() {
+      clearInterval(state.timer);
+      clearInterval(state.eventTimer);
+    }
+
+    function collapseCheck() {
+      for (const [m,v] of Object.entries(state.metrics)) {
+        if (v <= 0) {
+          state.gameOver = true;
+          state.result = "loss";
+          state.turning.push(`${m} hit zero under compound pressure.`);
+          stopTimers();
+          finish();
+          return true;
+        }
+      }
+      return false;
+    }
+
+    function selectPool() {
+      const type = state.chosenType;
+      const preferred = baseScenarios.filter(s => s.tags.includes(type));
+      const others = baseScenarios.filter(s => !s.tags.includes(type));
+      const chosen = [...shuffle(preferred).slice(0,5), ...shuffle(others).slice(0,2)];
+      return shuffle(chosen).slice(0, TOTAL_ROUNDS);
+    }
+
+    function applyDelayed() {
+      const toApply = state.delayed.filter(d => d.onRound === state.round);
+      state.delayed = state.delayed.filter(d => d.onRound !== state.round);
+      if (!toApply.length) { refs.carry.classList.add("hidden"); refs.carry.textContent = ""; return; }
+      const lines = [];
+      toApply.forEach(d => {
+        applyEffects(d.effects, d.note);
+        state.turning.push(d.note);
+        lines.push(`${d.note} (${metricText(d.effects)})`);
+      });
+      refs.carry.classList.remove("hidden");
+      refs.carry.textContent = lines.join(" ");
+    }
+
+    function startTimer(seconds) {
+      clearInterval(state.timer);
+      state.timerLeft = seconds;
+      refs.timer.textContent = `${state.timerLeft}s`;
+      refs.timerPill.classList.remove("low");
+      state.timer = setInterval(() => {
+        state.timerLeft--;
+        refs.timer.textContent = `${state.timerLeft}s`;
+        if (state.timerLeft <= 6) refs.timerPill.classList.add("low");
+        if (state.timerLeft <= 0) {
+          clearInterval(state.timer);
+          timeoutChoice();
+        }
+      }, 1000);
+    }
+
+    function speedBonus(elapsed, scenario) {
+      if (elapsed <= 4) return { reputation:+2, morale:+1, note:"Fast, decisive response boosted confidence." };
+      if (elapsed >= scenario.seconds - 3) return { reputation:-1, morale:-1, note:"Late response signaled hesitation under pressure." };
+      return { reputation:0, morale:0, note:"Response speed was steady and acceptable." };
+    }
+
+    function showScenario() {
+      if (state.round > TOTAL_ROUNDS) { state.result = "win"; finish(); return; }
+      refs.round.textContent = `Scenario ${state.round} / ${TOTAL_ROUNDS}`;
+      refs.typeLabel.textContent = startupTypes[state.chosenType].name;
+      refs.flavor.textContent = startupTypes[state.chosenType].flavor;
+      refs.resultCard.classList.add("hidden");
+      refs.pending = false;
+
+      applyDelayed();
+      renderMetrics();
+      if (collapseCheck()) return;
+
+      state.activeScenario = state.pool[state.round - 1];
+      const s = state.activeScenario;
+      refs.title.textContent = s.title;
+      refs.desc.textContent = s.description;
+      refs.choices.innerHTML = "";
+
+      s.choices.forEach((c, i) => {
+        const b = document.createElement("button");
+        b.className = "btn choice";
+        b.innerHTML = `<strong>${i+1}. ${c.text}</strong><small>Trade-off: ${metricText(c.effects)}</small>`;
+        b.onclick = () => choose(c);
+        refs.choices.appendChild(b);
+      });
+
+      state.roundStart = Date.now();
+      state.pending = true;
+      startTimer(s.seconds);
+      startEventStream();
+    }
+
+    function timeoutChoice() {
+      if (!state.pending || state.gameOver) return;
+      const s = state.activeScenario;
+      const auto = { text: "No clear action taken in time", effects: { reputation: -4 - Math.floor(s.urgency/2), cash: -2, morale: -3 }, traits: { decisiveness:-2, prioritization:-1 }, consequences: [], feedback: "The delay forced reactive damage control. Others made decisions for you." };
+      choose(auto, true);
+    }
+
+    function choose(choice, timedOut = false) {
+      if (!state.pending || state.gameOver) return;
+      state.pending = false;
+      clearInterval(state.timer);
+
+      const elapsed = Math.floor((Date.now() - state.roundStart) / 1000);
+      const s = state.activeScenario;
+      const speed = speedBonus(elapsed, s);
+
+      const primary = applyEffects(choice.effects, timedOut ? "Missed-decision penalty applied" : "Main decision applied");
+      const speedEff = applyEffects(speed, "Decision speed impact");
+      applyTraits(choice.traits);
+
+      (choice.consequences || []).forEach(con => {
+        if (!state.flags.has(con.flag)) {
+          state.flags.add(con.flag);
+          state.delayed.push({ onRound: state.round + con.after, effects: con.effects, note: con.note });
+        }
+      });
+
+      const timeAdvance = Math.max(2, Math.ceil(elapsed / 4) + s.urgency);
+      advanceTime(timeAdvance);
+
+      const impact = { reputation: primary.reputation + speedEff.reputation, cash: primary.cash + speedEff.cash, morale: primary.morale + speedEff.morale };
+
+      state.history.push({
+        round: state.round,
+        crisis: s.title,
+        action: choice.text,
+        impact,
+        speed: elapsed,
+        timedOut
+      });
+
+      refs.resultTitle.textContent = timedOut ? `Scenario ${state.round}: Decision Missed` : `Scenario ${state.round}: Decision Logged`;
+      refs.resultText.textContent = `${choice.feedback} ${speed.note}`;
+      refs.resultDelta.textContent = `Net impact: ${metricText(impact)} • ${elapsed}s used`;
+      refs.resultCard.classList.remove("hidden");
+
+      Array.from(refs.choices.children).forEach(btn => btn.disabled = true);
+
+      renderMetrics();
+      if (!collapseCheck()) refs.continue.focus();
+    }
+
+    function leadershipProfile() {
+      const t = state.traits;
+      const decisiveness = t.decisiveness >= 6 ? "highly decisive" : t.decisiveness <= -2 ? "hesitant" : "situationally decisive";
+      const ethics = t.ethics >= 5 ? "principles-forward" : t.ethics <= -2 ? "expediency-driven" : "pragmatic";
+      const empathy = t.empathy >= 5 ? "people-centered" : t.empathy <= -2 ? "hard-edged" : "balanced";
+      const risk = t.risk >= 5 ? "risk-seeking" : t.risk <= -2 ? "risk-conservative" : "risk-calibrated";
+      return `You led as a ${decisiveness}, ${ethics}, ${empathy}, ${risk} founder. Your pattern showed how speed, transparency, and trade-offs shaped compounding outcomes.`;
+    }
+
+    function finish() {
+      stopTimers();
+      show("end");
+      const avg = (state.metrics.reputation + state.metrics.cash + state.metrics.morale) / 3;
+      refs.endTitle.textContent = state.result === "win" ? "You kept the startup alive" : "Startup collapsed under crisis load";
+      refs.endText.textContent = state.result === "win"
+        ? (avg >= 70 ? "You balanced urgency with credibility and sustained execution." : "You survived with visible scars and unresolved risk debt.")
+        : "One core system failed before your adaptations could stabilize operations.";
+
+      refs.history.innerHTML = state.history.map(h => `<li><strong>S${h.round}:</strong> ${h.action} (${metricText(h.impact)}${h.timedOut ? "; timed out" : ""})</li>`).join("");
+      refs.turns.innerHTML = (state.turning.length ? state.turning : ["No major delayed consequences triggered beyond direct decisions."]).map(t => `<li>${t}</li>`).join("");
+      refs.profile.textContent = leadershipProfile();
+      refs.finalMetrics.textContent = `Final metrics — Reputation ${state.metrics.reputation}/100, Money ${state.metrics.cash}/100, Team Morale ${state.metrics.morale}/100.`;
+    }
+
+    function nextRound() {
+      if (state.gameOver) return;
+      state.round += 1;
+      showScenario();
+    }
+
+    function reset() {
+      stopTimers();
+      state.round = 1;
+      state.metrics = { reputation:60, cash:60, morale:60 };
+      state.traits = { transparency:0, empathy:0, decisiveness:0, ethics:0, risk:0, prioritization:0 };
+      state.flags = new Set();
+      state.delayed = [];
+      state.history = [];
+      state.turning = [];
+      state.clockHour = 9;
+      state.day = 1;
+      state.pending = false;
+      state.gameOver = false;
+      state.result = "";
+      refs.feed.innerHTML = "";
+      refs.carry.classList.add("hidden");
+      refs.timerPill.classList.remove("low");
+      refs.clock.textContent = fmtClock();
+      state.pool = selectPool();
+    }
+
+    function show(id) {
+      refs.start.classList.remove("active"); refs.game.classList.remove("active"); refs.end.classList.remove("active");
+      refs[id].classList.add("active");
+    }
+
+    function renderTypeButtons() {
+      refs.typeGrid.innerHTML = "";
+      Object.entries(startupTypes).forEach(([key, val]) => {
+        const b = document.createElement("button");
+        b.className = `btn type-btn ${state.chosenType === key ? "active" : ""}`;
+        b.innerHTML = `<strong>${val.name}</strong><small style="display:block;color:#9fb1e7;margin-top:.2rem;">${val.flavor}</small>`;
+        b.onclick = () => { state.chosenType = key; renderTypeButtons(); };
+        refs.typeGrid.appendChild(b);
+      });
+    }
+
+    refs.howBtn.onclick = () => refs.how.classList.toggle("hidden");
+    refs.startBtn.onclick = () => { reset(); show("game"); renderMetrics(); addFeed("Simulation started. Incoming traffic is normal."); showScenario(); };
+    refs.continue.onclick = nextRound;
+    refs.restart.onclick = () => show("start");
+
+    document.addEventListener("keydown", (e) => {
+      if (!refs.game.classList.contains("active") || !state.pending) return;
+      if (["1", "2", "3"].includes(e.key)) {
+        const idx = Number(e.key)-1;
+        const choice = state.activeScenario.choices[idx];
+        if (choice) choose(choice);
+      }
+    });
+
+    renderTypeButtons();
+    renderMetrics();
+  </script>
 </body>
 </html>
