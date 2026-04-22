@@ -6,13 +6,13 @@
   <title>Crisis Room Prototype</title>
   <style>
     :root {
-      --bg: #0f1826;
-      --bg2: #1d2a3d;
-      --panel: rgba(9, 16, 26, 0.92);
-      --line: #3f587b;
-      --text: #eef5ff;
-      --muted: #a9bbd8;
-      --accent: #82b5ff;
+      --bg: #0e1726;
+      --bg2: #1b2940;
+      --panel: rgba(8, 14, 24, 0.94);
+      --line: #405b80;
+      --text: #ecf4ff;
+      --muted: #9eb4d4;
+      --accent: #84b8ff;
       --good: #79dca3;
       --bad: #ff8290;
       --warn: #ffd17e;
@@ -42,7 +42,7 @@
       background: #15243a;
       color: var(--text);
       font-weight: 650;
-      padding: .6rem .85rem;
+      padding: .62rem .9rem;
       cursor: pointer;
     }
     .btn.primary { background: linear-gradient(#80b5ff,#5a8fe2); border-color: #95c0ff; }
@@ -59,11 +59,11 @@
       padding: .95rem;
       cursor: pointer;
       display: grid;
-      gap: .35rem;
+      gap: .45rem;
     }
 
-    .meeting { width: min(1200px, 96vw); margin: .8rem auto 1.25rem; gap: .7rem; }
-    .top { display: grid; gap: .6rem; grid-template-columns: 1.2fr 1fr auto; }
+    .meeting { width: min(1220px, 96vw); margin: .8rem auto 1.25rem; gap: .7rem; }
+    .top { display: grid; gap: .6rem; grid-template-columns: 1.3fr 1fr auto; }
     .hud { display: grid; grid-template-columns: repeat(3,minmax(90px,1fr)); gap: .45rem; }
     .metric { border: 1px solid #425a7b; border-radius: 10px; background: #111c2b; padding: .45rem; }
     .bar { margin-top: .25rem; height: 8px; border-radius: 999px; background: #060c14; overflow: hidden; }
@@ -75,26 +75,37 @@
     .room {
       border: 1px solid #395172;
       border-radius: 14px;
-      min-height: 680px;
+      min-height: 700px;
       padding: .9rem;
       background: linear-gradient(rgba(0,0,0,.24),rgba(0,0,0,.63)), linear-gradient(#606a75,#323a46 44%,#17202d);
       display: grid;
-      grid-template-rows: auto 1fr auto;
-      gap: .7rem;
+      grid-template-rows: auto auto 1fr auto;
+      gap: .6rem;
       position: relative;
+    }
+    .alert-ribbon {
+      border: 1px solid #6f5371;
+      background: linear-gradient(90deg,#2a1630,#231326,#241733);
+      color: #f2c6d5;
+      border-radius: 10px;
+      padding: .42rem .55rem;
+      font-size: .85rem;
+      line-height: 1.35;
     }
     .wall {
       margin: 0 auto;
-      width: min(900px,100%);
+      width: min(980px,100%);
       border: 6px solid #2c333e;
       border-radius: 11px;
       background: #09131f;
       padding: .55rem;
-      position: relative;
     }
     .wall-head { display: flex; justify-content: space-between; font-size: .78rem; color: #9ac1ff; margin-bottom: .3rem; }
-    .headline { min-height: 2.8em; line-height: 1.35; font-weight: 720; }
+    .headline { min-height: 3.3em; line-height: 1.35; font-weight: 720; }
     .ticker { margin-top: .3rem; border-radius: 8px; background: #17253a; color: #b8cae6; padding: .3rem .45rem; }
+    .context-grid { margin-top: .45rem; display: grid; gap: .35rem; grid-template-columns: repeat(2,minmax(220px,1fr)); }
+    .context-cell { border: 1px solid #314865; border-radius: 8px; padding: .35rem .45rem; background: #0f1d31; font-size: .84rem; }
+
     .timer {
       margin-top: .45rem;
       display: grid;
@@ -107,17 +118,17 @@
     .timer-fill { height: 100%; width: 100%; background: linear-gradient(90deg,#74c7ff,#ffd17e,#ff7988); transition: width .1s linear; }
 
     .bubble-wrap {
-      width: min(920px,100%);
+      width: min(980px,100%);
       margin: 0 auto;
       align-self: end;
       display: grid;
       gap: .5rem;
-      max-height: 285px;
+      max-height: 230px;
       overflow: auto;
       padding-right: .2rem;
     }
     .bubble {
-      max-width: 80%;
+      max-width: 87%;
       border-radius: 14px;
       border: 1px solid #486286;
       background: rgba(10,17,28,.9);
@@ -127,72 +138,45 @@
     .bubble.right { margin-left: auto; border-color: #5f88c0; background: #13243b; }
     .speaker { color: #a7cbff; font-size: .84rem; }
 
-    .choices { width: min(920px,100%); margin: 0 auto; display: grid; gap: .52rem; }
+    .choices { width: min(980px,100%); margin: 0 auto; display: grid; gap: .52rem; }
     .choice {
       text-align: left;
       border: 1px solid #58739a;
       border-radius: 10px;
       background: linear-gradient(#15243a,#101c2d);
       color: var(--text);
-      padding: .72rem .82rem;
+      padding: .7rem .82rem;
       cursor: pointer;
     }
+    .choice small { display:block; color:#afc4e4; margin-top:.2rem; }
 
-    .flow-overlay {
-      position: absolute;
-      left: 50%;
-      transform: translateX(-50%);
-      top: 132px;
-      width: min(820px,92%);
-      background: rgba(7, 14, 24, .96);
-      border: 1px solid #6588b9;
-      border-radius: 12px;
-      padding: .8rem;
-      z-index: 6;
-      display: none;
-      gap: .45rem;
+    .debrief, .event-screen, .final { width: min(1120px,95vw); margin: 1.4rem auto; gap: .7rem; }
+    canvas { width: 100%; height: 360px; border: 1px solid #3a5376; border-radius: 10px; background: #0b1321; }
+    .columns { display:grid; gap:.7rem; grid-template-columns: 1.1fr .9fr; }
+    .impact-list li, .log-list li { margin: .35rem 0; line-height: 1.4; }
+
+    @media (max-width: 1000px){
+      .top{grid-template-columns:1fr;}
+      .room{min-height:760px;}
+      .context-grid{grid-template-columns:1fr;}
+      .columns{grid-template-columns:1fr;}
+      .bubble{max-width:96%;}
     }
-    .impact-row { display: grid; grid-template-columns: 90px 1fr 50px; gap: .5rem; align-items: center; }
-    .impact-track { height: 8px; border-radius: 999px; background: #0b1119; overflow: hidden; }
-    .impact-fill { height: 100%; }
-    .impact-fill.good { background: linear-gradient(90deg,#4fc87c,#8be5ad); }
-    .impact-fill.bad { background: linear-gradient(90deg,#ff6679,#ff9aa7); }
-
-    .event-popup {
-      position: absolute;
-      top: 54px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: min(760px, 90%);
-      z-index: 7;
-      border-radius: 12px;
-      padding: .7rem .8rem;
-      border: 1px solid;
-      box-shadow: 0 10px 26px rgba(0,0,0,.45);
-      display: none;
-    }
-    .event-popup.good { background: #123023; border-color: #5fac84; }
-    .event-popup.bad { background: #3a1720; border-color: #d06b7a; }
-
-    .round-screen, .final { width: min(1020px,95vw); margin: 1.4rem auto; gap: .7rem; }
-    canvas { width: 100%; height: 340px; border: 1px solid #3a5376; border-radius: 10px; background: #0b1321; }
-
-    @media (max-width: 980px){ .top{grid-template-columns:1fr;} .room{min-height:740px;} .bubble{max-width:94%;} }
   </style>
 </head>
 <body>
   <section id="menu" class="screen active menu">
     <article class="panel">
       <p class="eyebrow">Main menu</p>
-      <h1>Boardroom Crisis — Structured Session Prototype</h1>
-      <p class="muted" style="margin-top:.35rem;">Choose one company session and complete exactly 10 rounds in a single run.</p>
+      <h1>Boardroom Crisis — Overload Protocol</h1>
+      <p class="muted" style="margin-top:.35rem;">Single-file local prototype. Exactly <strong>10 player decisions</strong> per session. Outside-world shocks can chain on top.</p>
     </article>
     <article class="panel">
       <p class="eyebrow">Choose one session</p>
       <div class="company-grid">
-        <button class="company-card" data-company="sustainable"><strong>Sustainable Company</strong><small>Community pressure, regulation, and climate-tech execution under scrutiny.</small></button>
-        <button class="company-card" data-company="tech"><strong>Tech Company</strong><small>Reliability shocks, security risks, scaling bets, and investor sentiment swings.</small></button>
-        <button class="company-card" data-company="consultancy"><strong>Consultancy Company</strong><small>Client trust, delivery quality, talent fatigue, and margin stress.</small></button>
+        <button class="company-card" data-company="sustainable"><strong>Sustainable Company</strong><small>Climate pressure, public accountability, fragile suppliers, political volatility.</small></button>
+        <button class="company-card" data-company="tech"><strong>Tech Company</strong><small>Outages, security, compliance deadlines, investor burn pressure, talent churn.</small></button>
+        <button class="company-card" data-company="consultancy"><strong>Consultancy Company</strong><small>Client trust crises, quality drift, burnout, margin erosion, legal ambiguity.</small></button>
       </div>
     </article>
   </section>
@@ -200,9 +184,9 @@
   <main id="meeting" class="screen meeting">
     <header class="top">
       <article class="panel">
-        <p class="eyebrow">Meeting room</p>
+        <p class="eyebrow">Crisis room</p>
         <h2 id="companyLabel">Company: —</h2>
-        <p id="roundLabel" class="muted" style="margin-top:.25rem;">Round 1 / 10</p>
+        <p id="roundLabel" class="muted" style="margin-top:.25rem;">Decision 1 / 10</p>
       </article>
       <article class="panel hud">
         <div class="metric">Reputation <strong id="repVal"></strong><div class="bar"><div id="repBar" class="fill rep"></div></div></div>
@@ -210,177 +194,392 @@
         <div class="metric">Morale <strong id="moraleVal"></strong><div class="bar"><div id="moraleBar" class="fill morale"></div></div></div>
       </article>
       <article class="panel" style="display:grid;gap:.45rem;align-content:start;">
-        <button id="soundBtn" class="btn">🔊 Sound: On</button>
         <button id="backMenu" class="btn">Back to Main Menu</button>
       </article>
     </header>
 
     <section class="room">
-      <div id="eventPopup" class="event-popup"></div>
-      <article id="flowOverlay" class="flow-overlay"></article>
-
+      <div id="alertRibbon" class="alert-ribbon"></div>
       <div class="wall">
-        <div class="wall-head"><span>Live screen</span><span id="clock"></span></div>
+        <div class="wall-head"><span>Live crisis feed</span><span id="clock"></span></div>
         <div id="headline" class="headline"></div>
         <div id="ticker" class="ticker"></div>
+        <div id="contextGrid" class="context-grid"></div>
         <div class="timer">
-          <strong id="timerLabel">30.0s</strong>
+          <strong id="timerLabel">24.0s</strong>
           <div class="timer-bar"><div id="timerFill" class="timer-fill"></div></div>
-          <span id="timerHint" class="muted">Ticking starts after 10s</span>
+          <span id="timerHint" class="muted">Timer starts now</span>
         </div>
       </div>
-
       <div id="bubbles" class="bubble-wrap"></div>
       <section id="choices" class="choices"></section>
     </section>
   </main>
 
-  <section id="roundSummary" class="screen round-screen">
+  <section id="debrief" class="screen debrief">
     <article class="panel">
-      <p class="eyebrow">Round summary</p>
-      <h2 id="summaryTitle">Round outcome</h2>
-      <p id="summaryText" class="muted" style="margin-top:.35rem;"></p>
-      <ul id="summaryList" class="muted"></ul>
-      <button id="nextRoundBtn" class="btn primary">Continue</button>
+      <p class="eyebrow" id="debriefEyebrow">Decision consequence</p>
+      <h2 id="debriefTitle">Progress snapshot</h2>
+      <p id="debriefText" class="muted" style="margin-top:.3rem;"></p>
+      <ul id="impactList" class="impact-list muted"></ul>
+      <button id="debriefNext" class="btn primary">Continue</button>
     </article>
     <article class="panel">
-      <h3>Company trajectory and projection to Round 10</h3>
-      <p class="muted" style="margin:.25rem 0 .5rem;">Solid = observed history. Dashed = projection to session end. Blue markers = decisions, triangles = outside-world events.</p>
-      <canvas id="graph" width="960" height="340"></canvas>
+      <h3>Performance trajectory to Round 10</h3>
+      <p class="muted" style="margin:.25rem 0 .5rem;">Solid lines: observed metrics. Dashed: projected trend. Markers: ● decisions, ▲ outside-world shocks.</p>
+      <canvas id="graph" width="1040" height="360"></canvas>
+    </article>
+  </section>
+
+  <section id="eventScreen" class="screen event-screen">
+    <article class="panel">
+      <p class="eyebrow">Outside-world interruption</p>
+      <h2 id="eventTitle"></h2>
+      <p id="eventBody" class="muted" style="margin-top:.3rem;"></p>
+      <ul id="eventList" class="impact-list muted"></ul>
+      <button id="eventContinue" class="btn primary">Show updated progress graph</button>
     </article>
   </section>
 
   <section id="final" class="screen final">
     <article class="panel">
-      <p class="eyebrow">Session complete</p>
+      <p class="eyebrow">Final review</p>
       <h2 id="finalTitle"></h2>
-      <p id="finalText" class="muted" style="margin-top:.35rem;"></p>
+      <p id="finalText" class="muted" style="margin-top:.25rem;"></p>
+      <p id="leaderType" class="muted" style="margin-top:.35rem;"></p>
       <p id="finalScores" class="muted" style="margin-top:.35rem;"></p>
       <button id="playAgain" class="btn primary" style="margin-top:.75rem;">Back to Main Menu</button>
+    </article>
+    <article class="panel">
+      <h3>Full session trajectory and turning points</h3>
+      <canvas id="finalGraph" width="1040" height="360"></canvas>
+    </article>
+    <article class="panel columns">
+      <div>
+        <h3>All decisions made</h3>
+        <ol id="decisionLog" class="log-list muted"></ol>
+      </div>
+      <div>
+        <h3>Outside-world events + delayed effects</h3>
+        <ul id="eventLog" class="log-list muted"></ul>
+        <h3 style="margin-top:.8rem;">Main turning points</h3>
+        <ul id="turningPoints" class="log-list muted"></ul>
+      </div>
     </article>
   </section>
 
   <script>
-    const voices = ["Asha", "Ibrahim", "Lena", "Mateo", "Jun", "Sofia", "Omar", "Nora"];
-
     const SCENARIOS = {
       sustainable: [
-        { headline: "Major buyer asks for full carbon-traceability proof before renewal", ticker: "Procurement freeze starts in 72 hours if documentation is weak", setup: ["Sustainability lead: Our pilot data is good, but supplier tier-2 records are inconsistent.", "Finance lead: If this renewal slips, runway pressure grows immediately."], options: [{ text: "Delay renewal, fund a rapid third-party traceability audit.", effect: { reputation: 9, cash: -10, morale: 3 } }, { text: "Submit partial data now and promise follow-up within a month.", effect: { reputation: -4, cash: -2, morale: 1 } }, { text: "Push back publicly and call requirements unrealistic.", effect: { reputation: -12, cash: 2, morale: -4 } }] },
-        { headline: "Community town hall turns hostile after local water-use allegations", ticker: "Regional radio and neighborhood groups demand immediate answers", setup: ["Community director: We need an open meeting and clear concessions.", "Operations lead: A hard pause will miss this quarter's delivery targets."], options: [{ text: "Publish water-use dashboard and co-design mitigation with local council.", effect: { reputation: 10, cash: -8, morale: 4 } }, { text: "Issue a short statement and keep operations unchanged.", effect: { reputation: -7, cash: 1, morale: -2 } }, { text: "Blame misinformation and threaten legal action.", effect: { reputation: -15, cash: 0, morale: -5 } }] },
-        { headline: "Prototype battery chemistry achieves unexpected durability gains", ticker: "Two strategic investors ask for updated milestone briefing", setup: ["R&D head: This is meaningful, but we only validated one manufacturing line.", "CEO advisor: Market confidence could improve if we communicate carefully."], options: [{ text: "Share findings with caveats and independent validation timeline.", effect: { reputation: 7, cash: 4, morale: 4 } }, { text: "Keep results internal until all lines are validated.", effect: { reputation: 1, cash: 1, morale: 1 } }, { text: "Announce 'breakthrough solved' language immediately.", effect: { reputation: -8, cash: 6, morale: -3 } }] },
-        { headline: "Government tender opens for climate-resilient infrastructure pilots", ticker: "Submission window is tight; compliance section is extensive", setup: ["Bid manager: We can win this, but proposal prep will overload teams.", "HR partner: People are already on edge after the last crunch cycle."], options: [{ text: "Bid with narrowed scope and protected staffing limits.", effect: { reputation: 6, cash: 7, morale: 1 } }, { text: "Skip this cycle to preserve quality and team health.", effect: { reputation: 2, cash: -1, morale: 4 } }, { text: "Bid full scope and force weekend execution.", effect: { reputation: -5, cash: 10, morale: -7 } }] },
-        { headline: "Independent NGO report questions your impact accounting assumptions", ticker: "Board members request an urgent integrity response plan", setup: ["Policy lead: We should open methodology and invite scrutiny.", "Investor rep: A public correction could spook short-term financing."], options: [{ text: "Issue full methodology update and external review invitation.", effect: { reputation: 8, cash: -6, morale: 3 } }, { text: "Make minor edits and avoid a wider public debate.", effect: { reputation: -6, cash: 1, morale: -2 } }, { text: "Attack report credibility and refuse engagement.", effect: { reputation: -13, cash: 2, morale: -4 } }] },
-        { headline: "Supplier strike threatens key recycled-material inputs next month", ticker: "Procurement warns cost volatility could rise sharply", setup: ["Supply lead: We should diversify suppliers now, even if margin dips.", "CFO: Immediate switches are expensive and contract penalties apply."], options: [{ text: "Pay short-term premiums to diversify supply immediately.", effect: { reputation: 4, cash: -9, morale: 2 } }, { text: "Negotiate with current supplier and wait one cycle.", effect: { reputation: -2, cash: -3, morale: -1 } }, { text: "Do nothing and absorb risk to protect current margins.", effect: { reputation: -9, cash: 2, morale: -3 } }] },
-        { headline: "International partner offers co-branding deal with aggressive growth targets", ticker: "Deal could expand reach but increases oversight complexity", setup: ["Partnership lead: Co-branding boosts trust in new markets.", "Legal counsel: Governance controls must be stronger before we sign."], options: [{ text: "Accept with strict governance clauses and phased rollout.", effect: { reputation: 6, cash: 8, morale: 2 } }, { text: "Delay signing until controls are fully implemented.", effect: { reputation: 2, cash: 0, morale: 3 } }, { text: "Sign quickly on partner terms to seize momentum.", effect: { reputation: -7, cash: 9, morale: -5 } }] },
-        { headline: "Employee pulse survey reveals trust drop in leadership transparency", ticker: "Internal forum threads highlight burnout and unclear priorities", setup: ["People lead: We need direct leadership Q&A and workload reset.", "Operations lead: We cannot miss customer deadlines this month."], options: [{ text: "Run transparent all-hands and rebalance delivery commitments.", effect: { reputation: 3, cash: -4, morale: 9 } }, { text: "Offer bonuses only and keep delivery pace unchanged.", effect: { reputation: -1, cash: -6, morale: -3 } }, { text: "Ignore survey, call it temporary sentiment noise.", effect: { reputation: -6, cash: 1, morale: -9 } }] },
-        { headline: "Flood-related disruption damages demonstration site in a key region", ticker: "Media frames this as a test of your resilience planning", setup: ["Program director: Fast on-site response could preserve confidence.", "CFO: Emergency redeployment will strain this quarter's cash plan."], options: [{ text: "Deploy emergency team and publish adaptation response updates.", effect: { reputation: 9, cash: -8, morale: 2 } }, { text: "Delay response and prioritize existing funded projects.", effect: { reputation: -8, cash: 2, morale: -3 } }, { text: "Suspend regional work indefinitely without stakeholder engagement.", effect: { reputation: -14, cash: -1, morale: -5 } }] },
-        { headline: "Large retailer offers nationwide rollout if your metrics dashboard is audited", ticker: "Contract value is high, but compliance timing is tight", setup: ["Sales lead: This is the biggest expansion chance this year.", "Compliance lead: We can do it, but need immediate process discipline."], options: [{ text: "Accept with audited dashboard milestone gates.", effect: { reputation: 7, cash: 10, morale: 1 } }, { text: "Negotiate a slower pilot-first rollout.", effect: { reputation: 4, cash: 4, morale: 3 } }, { text: "Accept instantly and promise full scale in six weeks.", effect: { reputation: -6, cash: 11, morale: -6 } }] }
+        {
+          headline: "A key retailer freezes renewal unless your full supply-chain carbon data is verified in 72 hours.",
+          ticker: "Procurement, ESG analysts, and labor NGOs are watching the same dashboard feed.",
+          detail: {
+            happened: "A leaked audit shows missing tier-2 supplier data for recycled inputs.",
+            why: "If trust collapses now, financing and contract renewals both tighten.",
+            who: "Retail partner, frontline operations team, investors, and community advocates.",
+            risk: "Immediate revenue freeze and reputational downgrade.",
+            tension: "Transparency protects long-term credibility but may expose short-term weakness."
+          },
+          options: [
+            { text: "Open books now, invite third-party audit, and accept short-term shipment delay.", logic: "Honest repair, higher immediate cost.", effect: { reputation: 10, cash: -12, morale: 4 }, tags: ["honesty", "caution"], outcome: "You protected trust, but burned cash to buy credibility." },
+            { text: "Release partial data now, quietly patch gaps over 30 days.", logic: "Stabilize optics while preserving runway.", effect: { reputation: -6, cash: -2, morale: -1 }, tags: ["risk", "ignore_warning"], outcome: "Short-term calm, but stakeholders detect evasiveness." },
+            { text: "Counterattack publicly and call standards unrealistic for the industry.", logic: "Aggressive narrative control.", effect: { reputation: -16, cash: 2, morale: -5 }, tags: ["bold", "corner_cut"], outcome: "You conserved cash but triggered trust backlash." }
+          ]
+        },
+        {
+          headline: "Town-hall footage of a polluted runoff channel goes viral overnight.",
+          ticker: "Local officials, school groups, and journalists request a same-day plan.",
+          detail: {
+            happened: "An old drainage line overflowed after storms and the clip is now national.",
+            why: "Your sustainability brand is core to pricing power.",
+            who: "Nearby residents, your field staff, and three pending municipal buyers.",
+            risk: "Permit delay and social-license damage.",
+            tension: "Operational continuity vs visible accountability in public."
+          },
+          options: [
+            { text: "Pause the site, co-host a public remediation forum, publish daily metrics.", logic: "Own the issue openly.", effect: { reputation: 9, cash: -9, morale: 3 }, tags: ["honesty", "empathy"], outcome: "You slowed output but de-escalated anger." },
+            { text: "Issue a legal-safe statement and continue operations unchanged.", logic: "Limit admission, preserve delivery.", effect: { reputation: -8, cash: 1, morale: -2 }, tags: ["caution", "ignore_warning"], outcome: "You protected schedule, but suspicion intensified." },
+            { text: "Blame activists for misinformation and litigate defamation claims.", logic: "Forceful deterrence.", effect: { reputation: -15, cash: -1, morale: -4 }, tags: ["bold", "risk"], outcome: "You looked decisive internally but triggered broader public hostility." }
+          ]
+        },
+        {
+          headline: "New battery prototype survives stress testing at 2x expected life.",
+          ticker: "Investors and strategic partners demand guidance before market opens.",
+          detail: {
+            happened: "Single-line pilot data beat durability assumptions.",
+            why: "This could reset your valuation narrative.",
+            who: "R&D teams, channel partners, future buyers.",
+            risk: "Overpromise now, credibility damage later.",
+            tension: "Momentum capture vs scientific rigor."
+          },
+          options: [
+            { text: "Announce cautiously with caveats and independent validation timeline.", logic: "Credible optimism.", effect: { reputation: 7, cash: 4, morale: 3 }, tags: ["honesty", "caution"], outcome: "You gained confidence without betting everything on early data." },
+            { text: "Keep results internal until multi-line validation completes.", logic: "Zero hype risk.", effect: { reputation: 1, cash: 1, morale: 0 }, tags: ["caution"], outcome: "You avoided backlash but missed narrative momentum." },
+            { text: "Call it a breakthrough and promise market rollout this quarter.", logic: "High-growth gamble.", effect: { reputation: -9, cash: 8, morale: -3 }, tags: ["bold", "risk", "corner_cut"], outcome: "You won short-term excitement but raised impossible expectations." }
+          ]
+        },
+        {
+          headline: "A flood damages your demonstration hub days before regulator inspection.",
+          ticker: "Media frames it as a stress test of your resilience claims.",
+          detail: {
+            happened: "Critical infrastructure failed under severe weather conditions.",
+            why: "Your market story depends on adaptation readiness.",
+            who: "Inspection agencies, local clients, and field engineers.",
+            risk: "Certification delays and contract slippage.",
+            tension: "Emergency spend vs quarter-end cash discipline."
+          },
+          options: [
+            { text: "Deploy emergency teams, publish hourly updates, and absorb recovery cost.", logic: "Visible operational accountability.", effect: { reputation: 10, cash: -10, morale: 2 }, tags: ["empathy", "protect_client"], outcome: "You protected trust while taking a direct financial hit." },
+            { text: "Delay inspection and prioritize higher-margin unaffected sites first.", logic: "Financial triage.", effect: { reputation: -7, cash: 2, morale: -2 }, tags: ["risk"], outcome: "You defended margin but signaled avoidance under pressure." },
+            { text: "Suspend regional commitments and re-negotiate all obligations later.", logic: "Hard reset.", effect: { reputation: -13, cash: -2, morale: -5 }, tags: ["caution", "corner_cut"], outcome: "You limited immediate complexity but collapsed stakeholder confidence." }
+          ]
+        }
       ],
       tech: [
-        { headline: "Core API outage hits enterprise payroll customers on deadline day", ticker: "Status page traffic surges while SLA penalties count upward", setup: ["SRE lead: Fast rollback restores service but risks data mismatches.", "Security lead: Safe rebuild takes longer and angers customers."], options: [{ text: "Rollback now, then run overnight data reconciliation.", effect: { reputation: 5, cash: -9, morale: -1 } }, { text: "Hold longer for verified recovery integrity.", effect: { reputation: -6, cash: -5, morale: 1 } }, { text: "Prioritize only premium accounts first.", effect: { reputation: -12, cash: 4, morale: -5 } }] },
-        { headline: "Major customer requests custom feature outside roadmap before renewal", ticker: "Account represents 18% of annual recurring revenue", setup: ["Product lead: A custom branch will slow core roadmap significantly.", "Revenue lead: Losing this account creates immediate investor anxiety."], options: [{ text: "Offer phased customization plus shared funding commitment.", effect: { reputation: 6, cash: 7, morale: 1 } }, { text: "Decline customization and defend product strategy.", effect: { reputation: -3, cash: -6, morale: 2 } }, { text: "Promise full custom build by next quarter.", effect: { reputation: -7, cash: 8, morale: -4 } }] },
-        { headline: "Security researcher reports possible auth vulnerability", ticker: "No exploit confirmed yet, but customer trust risk is high", setup: ["CISO: Early disclosure with tight scope builds credibility.", "Legal counsel: Premature wording could trigger contractual escalations."], options: [{ text: "Disclose early, patch quickly, publish technical postmortem.", effect: { reputation: 8, cash: -8, morale: 2 } }, { text: "Patch silently first, then update customers later.", effect: { reputation: -5, cash: -3, morale: -1 } }, { text: "Minimize issue publicly and avoid detailed follow-up.", effect: { reputation: -13, cash: 1, morale: -4 } }] },
-        { headline: "Benchmark test shows your model beats a key competitor on latency", ticker: "Inbound demo requests jump across two verticals", setup: ["Go-to-market lead: We should convert momentum with disciplined pilots.", "Support lead: Aggressive intake could overwhelm current team."], options: [{ text: "Open capped paid pilots with strict onboarding criteria.", effect: { reputation: 7, cash: 8, morale: 1 } }, { text: "Delay expansion until support hiring catches up.", effect: { reputation: 1, cash: 1, morale: 4 } }, { text: "Promise broad rollout in one month.", effect: { reputation: -8, cash: 9, morale: -5 } }] },
-        { headline: "Board pushes for burn reduction after valuation reset in sector", ticker: "Runway is stable today, but confidence requires visible discipline", setup: ["Finance lead: Cost controls now buy strategic optionality later.", "Engineering lead: Deep cuts will slow reliability work."], options: [{ text: "Cut non-core spend while protecting reliability roadmap.", effect: { reputation: 3, cash: 9, morale: -1 } }, { text: "Keep spend steady and defend long-term product velocity.", effect: { reputation: 1, cash: -6, morale: 2 } }, { text: "Cut broadly across all teams immediately.", effect: { reputation: -4, cash: 11, morale: -8 } }] },
-        { headline: "Cloud vendor announces regional pricing jump and quota uncertainty", ticker: "Your inference costs could rise by double digits this month", setup: ["Infra lead: Multi-cloud fallback is expensive but reduces single-point risk.", "CFO: Sudden migration harms margin and timeline confidence."], options: [{ text: "Invest in fallback capacity to reduce vendor concentration.", effect: { reputation: 4, cash: -8, morale: 2 } }, { text: "Absorb cost for one cycle and renegotiate volume terms.", effect: { reputation: -1, cash: -4, morale: 0 } }, { text: "Pass costs directly to customers with no transition support.", effect: { reputation: -9, cash: 5, morale: -3 } }] },
-        { headline: "New compliance framework for AI logging takes effect next quarter", ticker: "Enterprise buyers demand evidence of readiness before renewals", setup: ["Compliance lead: We can meet standards with focused architecture changes.", "Product lead: Redirecting teams may delay planned growth features."], options: [{ text: "Prioritize compliance refactor and communicate roadmap clearly.", effect: { reputation: 8, cash: -6, morale: 2 } }, { text: "Do minimum viable compliance and hope guidance softens.", effect: { reputation: -6, cash: -1, morale: -2 } }, { text: "Challenge framework publicly and defer implementation.", effect: { reputation: -12, cash: 2, morale: -3 } }] },
-        { headline: "Top engineer receives competitor offer and signals possible departure", ticker: "Internal channels show concern about leadership direction", setup: ["People lead: Retention requires trust, growth path, and realistic workload.", "Finance lead: Matching every offer can distort compensation structure."], options: [{ text: "Offer role growth plan plus team-wide workload reset.", effect: { reputation: 2, cash: -5, morale: 8 } }, { text: "Give cash counteroffer only and move on.", effect: { reputation: -1, cash: -6, morale: -2 } }, { text: "Let departure happen and frame it as normal churn.", effect: { reputation: -5, cash: 1, morale: -8 } }] },
-        { headline: "Press requests comment on customer complaint about model bias", ticker: "Narrative risk grows as screenshots spread on social feeds", setup: ["Trust lead: Transparent mitigation plan can contain reputational damage.", "PR lead: Defensive language may escalate criticism."], options: [{ text: "Acknowledge issue, share bias-audit plan and timelines.", effect: { reputation: 7, cash: -4, morale: 2 } }, { text: "Issue a neutral statement and investigate privately.", effect: { reputation: -4, cash: 0, morale: -1 } }, { text: "Dismiss complaint as non-representative outlier.", effect: { reputation: -11, cash: 1, morale: -3 } }] },
-        { headline: "Strategic channel partner proposes global distribution push", ticker: "Opportunity is large, but support readiness is uncertain", setup: ["Partnership lead: Controlled launch could accelerate enterprise traction.", "Customer success lead: Service quality will suffer if rollout is too fast."], options: [{ text: "Sign phased distribution plan with service-level checkpoints.", effect: { reputation: 6, cash: 10, morale: 1 } }, { text: "Pilot in one region first and evaluate support load.", effect: { reputation: 3, cash: 4, morale: 3 } }, { text: "Go all-in globally immediately.", effect: { reputation: -7, cash: 11, morale: -6 } }] }
+        {
+          headline: "Payroll API outage hits enterprise customers on salary-processing day.",
+          ticker: "Penalty clocks are live, social feeds are escalating, CFO hotlines are overloaded.",
+          detail: {
+            happened: "A hotfix created a cascading auth timeout across multiple regions.",
+            why: "Customers measure trust by reliability during payroll windows.",
+            who: "Client payroll teams, your SRE team, finance leadership.",
+            risk: "SLA penalties plus churn risk within 24 hours.",
+            tension: "Fast rollback risk vs integrity-first rebuild delay."
+          },
+          options: [
+            { text: "Rollback immediately, communicate clearly, and run overnight reconciliation.", logic: "Recover service first, repair data second.", effect: { reputation: 6, cash: -11, morale: -1 }, tags: ["honesty", "risk"], outcome: "You restored service quickly but accepted expensive cleanup." },
+            { text: "Keep systems paused until full integrity check completes.", logic: "Protect data certainty.", effect: { reputation: -7, cash: -6, morale: 1 }, tags: ["caution"], outcome: "You reduced downstream defects, but customers felt abandoned in the moment." },
+            { text: "Prioritize premium clients only and queue everyone else.", logic: "Revenue-first protection.", effect: { reputation: -14, cash: 4, morale: -6 }, tags: ["bold", "corner_cut"], outcome: "You preserved top accounts but amplified reputational damage." }
+          ]
+        },
+        {
+          headline: "Security researcher reports a probable auth bypass with proof-of-concept code.",
+          ticker: "No confirmed breach yet, but screenshots are already in customer Slack channels.",
+          detail: {
+            happened: "Researcher submitted exploit path with reproducible steps.",
+            why: "Enterprise renewals depend on trust in incident handling.",
+            who: "Security team, legal, customer success, and procurement boards.",
+            risk: "Contract escalation if disclosure appears evasive.",
+            tension: "Early transparency vs legal exposure management."
+          },
+          options: [
+            { text: "Disclose early with scope clarity, patch now, publish postmortem timeline.", logic: "Trust-centric response.", effect: { reputation: 9, cash: -8, morale: 2 }, tags: ["honesty", "caution"], outcome: "You absorbed short-term friction but built durable credibility." },
+            { text: "Patch quietly first and notify later with limited detail.", logic: "Contain panic before communication.", effect: { reputation: -6, cash: -3, morale: -1 }, tags: ["risk", "ignore_warning"], outcome: "You reduced noise initially, then faced backlash for opacity." },
+            { text: "Downplay severity and avoid broad customer disclosure.", logic: "Narrative suppression.", effect: { reputation: -15, cash: 1, morale: -4 }, tags: ["bold", "corner_cut"], outcome: "You protected short-term optics but worsened trust collapse." }
+          ]
+        },
+        {
+          headline: "Board demands visible burn reduction after sector valuation shock.",
+          ticker: "Runway exists, but confidence now depends on proving control under pressure.",
+          detail: {
+            happened: "Two peer firms announced emergency layoffs overnight.",
+            why: "Your spending discipline now affects fundraising terms.",
+            who: "All teams, recruiting pipeline, external investors.",
+            risk: "Cuts can destabilize reliability and increase attrition.",
+            tension: "Financial optics vs execution capacity."
+          },
+          options: [
+            { text: "Cut non-core spend while shielding reliability and support teams.", logic: "Selective discipline.", effect: { reputation: 3, cash: 10, morale: -2 }, tags: ["caution"], outcome: "You improved runway without fully sacrificing core execution." },
+            { text: "Hold spend and defend long-term product velocity publicly.", logic: "Future-growth conviction.", effect: { reputation: -2, cash: -7, morale: 1 }, tags: ["bold"], outcome: "You kept momentum, but investor confidence weakened." },
+            { text: "Implement broad cuts immediately across all teams.", logic: "Maximum runway shock therapy.", effect: { reputation: -6, cash: 12, morale: -10 }, tags: ["risk", "corner_cut"], outcome: "Cash improved fast, but trust and execution stability dropped." }
+          ]
+        },
+        {
+          headline: "Press inquiry on model bias spikes after a high-profile customer complaint.",
+          ticker: "Policy groups, enterprise buyers, and regulators are now using your case as an example.",
+          detail: {
+            happened: "Complaint thread with screenshots gained major visibility.",
+            why: "This affects renewal trust and future compliance posture.",
+            who: "Affected users, trust team, sales pipeline.",
+            risk: "Narrative lock-in as irresponsible AI vendor.",
+            tension: "Defensive legal language vs accountable product correction."
+          },
+          options: [
+            { text: "Acknowledge harm, publish mitigation roadmap, and fund bias audit.", logic: "Accountability-forward.", effect: { reputation: 8, cash: -5, morale: 2 }, tags: ["honesty", "empathy"], outcome: "You accepted fault visibility and gained long-term legitimacy." },
+            { text: "Issue neutral statement and investigate privately first.", logic: "Control message risk.", effect: { reputation: -5, cash: 0, morale: -1 }, tags: ["caution"], outcome: "You reduced immediate legal exposure but looked evasive." },
+            { text: "Dismiss complaint as edge-case misuse.", logic: "Hardline defense.", effect: { reputation: -12, cash: 1, morale: -3 }, tags: ["bold", "ignore_warning"], outcome: "You appeared decisive internally but deepened external distrust." }
+          ]
+        }
       ],
       consultancy: [
-        { headline: "Flagship client questions renewal after delayed transformation milestone", ticker: "Account contributes a quarter of quarterly billings", setup: ["Engagement lead: Executive reset plus recovery sprint can still save trust.", "Finance lead: Concessions may compress margin too far."], options: [{ text: "Launch joint recovery sprint with client steering committee.", effect: { reputation: 8, cash: -7, morale: 2 } }, { text: "Hold contract position and request formal change order.", effect: { reputation: -5, cash: -2, morale: -2 } }, { text: "Exit account and redeploy teams elsewhere.", effect: { reputation: -11, cash: -5, morale: -5 } }] },
-        { headline: "Internal quality audit finds inconsistent deliverable standards across teams", ticker: "Two clients request assurance before signing extensions", setup: ["Quality director: We need a unified delivery playbook now.", "Sales lead: Pausing pursuits now could cost pipeline momentum."], options: [{ text: "Standardize delivery controls before taking new work.", effect: { reputation: 7, cash: -6, morale: 3 } }, { text: "Patch only high-risk accounts and keep growth push.", effect: { reputation: -3, cash: 2, morale: -1 } }, { text: "Ignore audit and prioritize short-term utilization.", effect: { reputation: -12, cash: 3, morale: -4 } }] },
-        { headline: "Senior consultant wins rapid turnaround at struggling client account", ticker: "Client leadership praises your team in board update", setup: ["Account manager: This is social proof we can use in renewals.", "Operations lead: Be careful not to oversell one success as universal."], options: [{ text: "Publish measured case study with concrete scope limits.", effect: { reputation: 6, cash: 5, morale: 4 } }, { text: "Keep win private and focus only on existing client trust.", effect: { reputation: 2, cash: 2, morale: 2 } }, { text: "Market it aggressively as guaranteed result.", effect: { reputation: -6, cash: 4, morale: -2 } }] },
-        { headline: "Confidential slide deck leak appears in competitor pitch", ticker: "Affected client asks for incident chronology and remediation", setup: ["Legal counsel: Immediate transparency reduces accusation risk.", "Partner lead: Premature admissions could widen liability."], options: [{ text: "Disclose quickly and fund forensic containment effort.", effect: { reputation: 9, cash: -8, morale: 2 } }, { text: "Wait for full forensic certainty before disclosure.", effect: { reputation: -8, cash: -2, morale: -2 } }, { text: "Minimize issue and deny strategic impact.", effect: { reputation: -14, cash: 1, morale: -4 } }] },
-        { headline: "Procurement head at major prospect requests steep discount for fast award", ticker: "Deal could fill capacity but threatens profitability baseline", setup: ["Commercial lead: Discounting heavily sets dangerous precedent.", "Growth lead: Missing this deal may leave teams underutilized."], options: [{ text: "Offer moderate discount tied to phased scope expansion.", effect: { reputation: 4, cash: 7, morale: 1 } }, { text: "Decline discount and hold value-based pricing.", effect: { reputation: 1, cash: -2, morale: 2 } }, { text: "Accept deep discount to win immediately.", effect: { reputation: -5, cash: 8, morale: -4 } }] },
-        { headline: "Employee survey shows burnout rising after consecutive weekend pushes", ticker: "Attrition risk climbs in high-demand practice area", setup: ["People lead: Workload redesign is needed, not just compensation tweaks.", "Delivery lead: Near-term deadlines are still unforgiving."], options: [{ text: "Rescope commitments and enforce protected recovery windows.", effect: { reputation: 2, cash: -4, morale: 9 } }, { text: "Offer retention bonuses without workload changes.", effect: { reputation: -1, cash: -5, morale: -3 } }, { text: "Maintain pace and frame pressure as temporary.", effect: { reputation: -4, cash: 1, morale: -8 } }] },
-        { headline: "Industry analyst ranks your firm high for execution reliability", ticker: "Dormant enterprise accounts reopen procurement conversations", setup: ["Brand lead: Strong moment to pursue selective premium engagements.", "Resource manager: Too much intake could erode service quality quickly."], options: [{ text: "Pursue selective premium opportunities with capacity gates.", effect: { reputation: 7, cash: 8, morale: 2 } }, { text: "Take a conservative approach and protect current clients first.", effect: { reputation: 3, cash: 3, morale: 3 } }, { text: "Open intake broadly with aggressive timelines.", effect: { reputation: -7, cash: 9, morale: -5 } }] },
-        { headline: "Cross-border project faces sudden legal ambiguity in data-transfer clause", ticker: "Client wants immediate guidance before contract signature", setup: ["Risk lead: We should invest in specialist counsel now.", "Finance lead: Specialized counsel costs are high this quarter."], options: [{ text: "Hire specialist counsel and provide robust compliant plan.", effect: { reputation: 8, cash: -7, morale: 1 } }, { text: "Use internal legal summary and delay final recommendation.", effect: { reputation: -4, cash: -2, morale: -1 } }, { text: "Proceed with weak assumptions to keep timeline.", effect: { reputation: -10, cash: 2, morale: -3 } }] },
-        { headline: "Client executive sponsor departs abruptly during critical delivery phase", ticker: "New leadership questions scope and value realization", setup: ["Partner: We need rapid relationship rebuild at executive level.", "PMO lead: Scope instability could hit utilization and morale."], options: [{ text: "Run executive reset workshop and re-baseline scope transparently.", effect: { reputation: 7, cash: -5, morale: 2 } }, { text: "Keep current plan and wait for new sponsor to settle.", effect: { reputation: -5, cash: -1, morale: -2 } }, { text: "Pressure client to sign unchanged scope immediately.", effect: { reputation: -11, cash: 1, morale: -4 } }] },
-        { headline: "Global nonprofit invites your firm to co-lead high-visibility advisory coalition", ticker: "Credibility boost is significant, but delivery obligations are heavy", setup: ["Strategy lead: This can strengthen reputation and future pipeline quality.", "Operations lead: We must protect current teams from overload."], options: [{ text: "Join with defined scope and dedicated coalition team.", effect: { reputation: 9, cash: 5, morale: 2 } }, { text: "Decline politely and focus on core portfolio stability.", effect: { reputation: 1, cash: 0, morale: 2 } }, { text: "Join broadly without resource safeguards.", effect: { reputation: -6, cash: 6, morale: -6 } }] }
+        {
+          headline: "Your biggest client threatens termination after missing a critical milestone.",
+          ticker: "The account funds multiple teams and anchors your quarterly forecast.",
+          detail: {
+            happened: "A dependency issue delayed executive dashboard delivery by three weeks.",
+            why: "Losing the account creates revenue shock and market doubt.",
+            who: "Client sponsor group, account team, internal staffing plans.",
+            risk: "Immediate churn and reference-account damage.",
+            tension: "Margin defense vs relationship repair investment."
+          },
+          options: [
+            { text: "Launch joint recovery command center with transparent daily reporting.", logic: "Trust-first salvage.", effect: { reputation: 8, cash: -8, morale: 2 }, tags: ["honesty", "protect_client"], outcome: "You rebuilt confidence while accepting margin pain." },
+            { text: "Hold contract terms and request formal change-order before extra work.", logic: "Protect economics and precedent.", effect: { reputation: -6, cash: -2, morale: -2 }, tags: ["caution"], outcome: "You protected legal footing but harmed relationship momentum." },
+            { text: "Exit the account and redeploy teams to higher-margin pursuits.", logic: "Hard portfolio reset.", effect: { reputation: -12, cash: -5, morale: -6 }, tags: ["bold", "corner_cut"], outcome: "You cut uncertainty but signaled instability to the market." }
+          ]
+        },
+        {
+          headline: "Internal audit reveals inconsistent quality controls across three delivery squads.",
+          ticker: "Two renewal committees request assurance evidence within five days.",
+          detail: {
+            happened: "Templates and sign-off controls drifted under rapid growth.",
+            why: "Quality variance can trigger cascading client distrust.",
+            who: "Delivery managers, client executives, sales team.",
+            risk: "Renewal delays and reputational downgrade.",
+            tension: "Pause growth for standards vs push pipeline to protect cash."
+          },
+          options: [
+            { text: "Freeze new sales for one sprint and enforce one quality playbook.", logic: "Structural repair.", effect: { reputation: 7, cash: -7, morale: 3 }, tags: ["caution", "honesty"], outcome: "You bought consistency at the expense of near-term revenue." },
+            { text: "Patch only high-risk accounts and keep sales velocity.", logic: "Targeted stabilization.", effect: { reputation: -3, cash: 2, morale: -1 }, tags: ["risk"], outcome: "You reduced some risk but left systemic weakness visible." },
+            { text: "Ignore audit findings and prioritize utilization this quarter.", logic: "Revenue-first posture.", effect: { reputation: -13, cash: 3, morale: -4 }, tags: ["bold", "ignore_warning"], outcome: "Short-term utilization rose, but confidence eroded sharply." }
+          ]
+        },
+        {
+          headline: "A confidential client deck leaks into a competitor pitch narrative.",
+          ticker: "The client asks for immediate chronology, accountability, and prevention plan.",
+          detail: {
+            happened: "An ex-contractor account retained access longer than policy allowed.",
+            why: "Trust in discretion is your core product.",
+            who: "Affected client board, legal, security, and partner leadership.",
+            risk: "Liability exposure and multi-account confidence shock.",
+            tension: "Fast transparency vs legal risk containment."
+          },
+          options: [
+            { text: "Disclose timeline now, fund forensic response, and brief all key clients.", logic: "Proactive trust defense.", effect: { reputation: 10, cash: -9, morale: 2 }, tags: ["honesty", "empathy"], outcome: "You absorbed cost to preserve trust architecture." },
+            { text: "Wait for full forensic certainty before broad disclosure.", logic: "Legal containment first.", effect: { reputation: -8, cash: -2, morale: -2 }, tags: ["caution", "ignore_warning"], outcome: "You reduced legal ambiguity but looked delayed and reactive." },
+            { text: "Minimize severity publicly and treat it as isolated noise.", logic: "Narrative suppression.", effect: { reputation: -15, cash: 1, morale: -4 }, tags: ["corner_cut", "bold"], outcome: "You avoided immediate admission but lost credibility." }
+          ]
+        },
+        {
+          headline: "Burnout risk spikes after six consecutive weekend pushes in a key practice.",
+          ticker: "High performers quietly message recruiters while deadlines keep tightening.",
+          detail: {
+            happened: "Two senior managers requested leave and one resignation rumor surfaced.",
+            why: "Talent loss can break delivery quality and client confidence.",
+            who: "Consultants, project leads, and top-tier clients.",
+            risk: "Attrition spiral and late delivery penalties.",
+            tension: "People recovery vs short-term delivery commitments."
+          },
+          options: [
+            { text: "Rescope contracts, protect recovery windows, and brief clients honestly.", logic: "People-first stabilization.", effect: { reputation: 3, cash: -5, morale: 10 }, tags: ["empathy", "honesty"], outcome: "You reduced burnout pressure and preserved long-term capacity." },
+            { text: "Offer retention bonuses only and keep workload unchanged.", logic: "Financial patch over structural issue.", effect: { reputation: -2, cash: -6, morale: -4 }, tags: ["risk"], outcome: "You bought temporary calm without fixing root strain." },
+            { text: "Maintain current pace and frame pressure as elite performance culture.", logic: "Hard-driving execution identity.", effect: { reputation: -6, cash: 1, morale: -10 }, tags: ["bold", "corner_cut"], outcome: "You protected immediate output while accelerating team exhaustion." }
+          ]
+        }
       ]
     };
 
-    const EVENTS = {
-      good: [
-        { text: "Unexpected positive press profile boosts public confidence in your crisis leadership.", effect: { reputation: 6, cash: 2, morale: 3 } },
-        { text: "Investor confidence improves after a favorable sector note; financing conversations soften.", effect: { reputation: 3, cash: 7, morale: 2 } },
-        { text: "A dormant prospect signs a surprise contract after seeing your decision discipline.", effect: { reputation: 4, cash: 8, morale: 1 } },
-        { text: "Product response outperforms forecasts, easing pressure inside the room.", effect: { reputation: 5, cash: 3, morale: 4 } }
-      ],
-      bad: [
-        { text: "War escalation triggers market panic, spiking costs and delaying client commitments.", effect: { reputation: -2, cash: -9, morale: -3 } },
-        { text: "Regulatory shock lands overnight, forcing expensive compliance adjustments.", effect: { reputation: -5, cash: -7, morale: -2 } },
-        { text: "A major client panics over headlines and pauses approvals pending board review.", effect: { reputation: -4, cash: -8, morale: -2 } },
-        { text: "Cross-market selloff rattles stakeholders and freezes near-term purchasing decisions.", effect: { reputation: -3, cash: -10, morale: -2 } }
-      ],
-      trump: { text: "Breaking: Trump-related political shock sparks tariff fears, and markets turn risk-off against your sector.", effect: { reputation: -4, cash: -11, morale: -3 } }
+    const OUTSIDE_EVENTS = [
+      {
+        title: "Macroeconomic whiplash",
+        body: "An overnight risk-off move tightens customer budgets. Procurement approvals now require extra finance sign-off.",
+        effect: { reputation: -2, cash: -9, morale: -3 },
+        type: "bad"
+      },
+      {
+        title: "Regulatory rumor shock",
+        body: "Draft guidance leaks early. Buyers pause while legal teams reassess obligations.",
+        effect: { reputation: -4, cash: -7, morale: -2 },
+        type: "bad"
+      },
+      {
+        title: "Unexpected ally support",
+        body: "A respected partner publicly endorses your handling approach, improving stakeholder confidence.",
+        effect: { reputation: 5, cash: 4, morale: 2 },
+        type: "good"
+      },
+      {
+        title: "Sector breakthrough spillover",
+        body: "A favorable market narrative in your sector boosts willingness to continue pilot funding.",
+        effect: { reputation: 3, cash: 6, morale: 1 },
+        type: "good"
+      }
+    ];
+
+    const voices = ["Asha", "Ibrahim", "Lena", "Mateo", "Jun", "Sofia", "Omar", "Nora", "Priya", "Evan"];
+    const CLAMP = v => Math.max(0, Math.min(100, Math.round(v)));
+    const rand = (a, b) => Math.floor(Math.random() * (b - a + 1)) + a;
+    const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+    const shuffle = arr => {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
     };
 
     const state = {
       company: null,
       rounds: [],
-      roundIndex: 0,
-      reputation: 62,
-      cash: 62,
-      morale: 62,
+      decisionIndex: 0,
+      reputation: 58,
+      cash: 58,
+      morale: 58,
       history: { reputation: [], cash: [], morale: [] },
       eventsLog: [],
-      trumpUsed: false,
+      decisionsLog: [],
+      delayedQueue: [],
+      pendingDelayedApplied: [],
       timerDeadline: 0,
       timerInterval: null,
-      tickTimeout: null,
-      lockChoice: false,
-      soundOn: true,
-      audioReady: false,
-      flowRound: null
+      locked: false,
+      phase: "decision",
+      awaitingSecondGraph: false,
+      currentDecisionResult: null,
+      sessionEndedEarly: false,
+      behavior: { bold: 0, caution: 0, honesty: 0, empathy: 0, risk: 0, corner_cut: 0 }
     };
 
     const el = {
-      menu: document.getElementById("menu"), meeting: document.getElementById("meeting"), roundSummary: document.getElementById("roundSummary"), final: document.getElementById("final"),
-      companyLabel: document.getElementById("companyLabel"), roundLabel: document.getElementById("roundLabel"),
-      repVal: document.getElementById("repVal"), cashVal: document.getElementById("cashVal"), moraleVal: document.getElementById("moraleVal"),
-      repBar: document.getElementById("repBar"), cashBar: document.getElementById("cashBar"), moraleBar: document.getElementById("moraleBar"),
-      headline: document.getElementById("headline"), ticker: document.getElementById("ticker"), bubbles: document.getElementById("bubbles"), choices: document.getElementById("choices"),
-      soundBtn: document.getElementById("soundBtn"), clock: document.getElementById("clock"),
-      timerLabel: document.getElementById("timerLabel"), timerFill: document.getElementById("timerFill"), timerHint: document.getElementById("timerHint"),
-      flowOverlay: document.getElementById("flowOverlay"), eventPopup: document.getElementById("eventPopup"),
-      summaryTitle: document.getElementById("summaryTitle"), summaryText: document.getElementById("summaryText"), summaryList: document.getElementById("summaryList"),
-      nextRoundBtn: document.getElementById("nextRoundBtn"), graph: document.getElementById("graph"),
-      finalTitle: document.getElementById("finalTitle"), finalText: document.getElementById("finalText"), finalScores: document.getElementById("finalScores")
+      menu: document.getElementById("menu"),
+      meeting: document.getElementById("meeting"),
+      debrief: document.getElementById("debrief"),
+      eventScreen: document.getElementById("eventScreen"),
+      final: document.getElementById("final"),
+      companyLabel: document.getElementById("companyLabel"),
+      roundLabel: document.getElementById("roundLabel"),
+      repVal: document.getElementById("repVal"),
+      cashVal: document.getElementById("cashVal"),
+      moraleVal: document.getElementById("moraleVal"),
+      repBar: document.getElementById("repBar"),
+      cashBar: document.getElementById("cashBar"),
+      moraleBar: document.getElementById("moraleBar"),
+      clock: document.getElementById("clock"),
+      headline: document.getElementById("headline"),
+      ticker: document.getElementById("ticker"),
+      contextGrid: document.getElementById("contextGrid"),
+      alertRibbon: document.getElementById("alertRibbon"),
+      timerLabel: document.getElementById("timerLabel"),
+      timerFill: document.getElementById("timerFill"),
+      timerHint: document.getElementById("timerHint"),
+      bubbles: document.getElementById("bubbles"),
+      choices: document.getElementById("choices"),
+      graph: document.getElementById("graph"),
+      finalGraph: document.getElementById("finalGraph"),
+      debriefEyebrow: document.getElementById("debriefEyebrow"),
+      debriefTitle: document.getElementById("debriefTitle"),
+      debriefText: document.getElementById("debriefText"),
+      impactList: document.getElementById("impactList"),
+      debriefNext: document.getElementById("debriefNext"),
+      eventTitle: document.getElementById("eventTitle"),
+      eventBody: document.getElementById("eventBody"),
+      eventList: document.getElementById("eventList"),
+      eventContinue: document.getElementById("eventContinue"),
+      finalTitle: document.getElementById("finalTitle"),
+      finalText: document.getElementById("finalText"),
+      leaderType: document.getElementById("leaderType"),
+      finalScores: document.getElementById("finalScores"),
+      decisionLog: document.getElementById("decisionLog"),
+      eventLog: document.getElementById("eventLog"),
+      turningPoints: document.getElementById("turningPoints")
     };
-
-    const clamp = v => Math.max(0, Math.min(100, Math.round(v)));
-    const rand = (a, b) => Math.floor(Math.random() * (b - a + 1)) + a;
-    const pick = arr => arr[Math.floor(Math.random() * arr.length)];
-    const shuffle = arr => {
-      const a = [...arr];
-      for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
-      return a;
-    };
-
-    let audioCtx, masterGain, musicGain;
 
     function setScreen(screen) {
-      [el.menu, el.meeting, el.roundSummary, el.final].forEach(s => s.classList.remove("active"));
+      [el.menu, el.meeting, el.debrief, el.eventScreen, el.final].forEach(s => s.classList.remove("active"));
       screen.classList.add("active");
       if (screen !== el.meeting) stopTimer();
-    }
-
-    function updateClock() { el.clock.textContent = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false }); }
-    setInterval(updateClock, 1000); updateClock();
-
-    function updateHUD() {
-      state.reputation = clamp(state.reputation);
-      state.cash = clamp(state.cash);
-      state.morale = clamp(state.morale);
-      el.repVal.textContent = state.reputation;
-      el.cashVal.textContent = state.cash;
-      el.moraleVal.textContent = state.morale;
-      el.repBar.style.width = `${state.reputation}%`;
-      el.cashBar.style.width = `${state.cash}%`;
-      el.moraleBar.style.width = `${state.morale}%`;
     }
 
     function bubble(text, right = false) {
@@ -391,44 +590,85 @@
       el.bubbles.scrollTop = el.bubbles.scrollHeight;
     }
 
-    function startGame(companyKey) {
-      state.company = companyKey;
-      state.rounds = shuffle(SCENARIOS[companyKey]).slice(0, 10);
-      state.roundIndex = 0;
-      state.eventsLog = [];
-      state.trumpUsed = false;
-      state.lockChoice = false;
-      state.flowRound = null;
-      const starts = { sustainable: { reputation: 66, cash: 60, morale: 64 }, tech: { reputation: 62, cash: 65, morale: 61 }, consultancy: { reputation: 67, cash: 59, morale: 63 } };
-      state.reputation = starts[companyKey].reputation;
-      state.cash = starts[companyKey].cash;
-      state.morale = starts[companyKey].morale;
-      state.history = { reputation: [state.reputation], cash: [state.cash], morale: [state.morale] };
-      el.companyLabel.textContent = `Company: ${companyKey === "sustainable" ? "Sustainable Company" : companyKey === "tech" ? "Tech Company" : "Consultancy Company"}`;
-      updateHUD();
-      renderRound();
+    function updateHUD() {
+      state.reputation = CLAMP(state.reputation);
+      state.cash = CLAMP(state.cash);
+      state.morale = CLAMP(state.morale);
+      el.repVal.textContent = state.reputation;
+      el.cashVal.textContent = state.cash;
+      el.moraleVal.textContent = state.morale;
+      el.repBar.style.width = `${state.reputation}%`;
+      el.cashBar.style.width = `${state.cash}%`;
+      el.moraleBar.style.width = `${state.morale}%`;
     }
 
-    function renderRound() {
-      const round = state.rounds[state.roundIndex];
-      state.lockChoice = false;
-      el.roundLabel.textContent = `Round ${state.roundIndex + 1} / 10`;
+    function clockTick() {
+      el.clock.textContent = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false });
+    }
+    setInterval(clockTick, 1000);
+    clockTick();
+
+    function startGame(company) {
+      const labels = { sustainable: "Sustainable Company", tech: "Tech Company", consultancy: "Consultancy Company" };
+      const starts = { sustainable: { reputation: 61, cash: 58, morale: 62 }, tech: { reputation: 58, cash: 62, morale: 57 }, consultancy: { reputation: 63, cash: 56, morale: 60 } };
+      state.company = company;
+      state.rounds = shuffle(SCENARIOS[company]).slice(0, 4);
+      while (state.rounds.length < 10) state.rounds.push(pick(SCENARIOS[company]));
+      state.rounds = state.rounds.slice(0, 10);
+      state.decisionIndex = 0;
+      state.reputation = starts[company].reputation;
+      state.cash = starts[company].cash;
+      state.morale = starts[company].morale;
+      state.history = { reputation: [state.reputation], cash: [state.cash], morale: [state.morale] };
+      state.eventsLog = [];
+      state.decisionsLog = [];
+      state.delayedQueue = [];
+      state.pendingDelayedApplied = [];
+      state.currentDecisionResult = null;
+      state.awaitingSecondGraph = false;
+      state.locked = false;
+      state.phase = "decision";
+      state.sessionEndedEarly = false;
+      state.behavior = { bold: 0, caution: 0, honesty: 0, empathy: 0, risk: 0, corner_cut: 0 };
+      el.companyLabel.textContent = `Company: ${labels[company]}`;
+      updateHUD();
+      renderDecision();
+    }
+
+    function renderDecision() {
+      if (state.sessionEndedEarly || state.decisionIndex >= 10) {
+        finishSession();
+        return;
+      }
+      const round = state.rounds[state.decisionIndex];
+      state.locked = false;
+      state.phase = "decision";
+      el.roundLabel.textContent = `Decision ${state.decisionIndex + 1} / 10`;
       el.headline.textContent = round.headline;
       el.ticker.textContent = round.ticker;
+      el.contextGrid.innerHTML = `
+        <div class="context-cell"><strong>What happened:</strong> ${round.detail.happened}</div>
+        <div class="context-cell"><strong>Why it matters:</strong> ${round.detail.why}</div>
+        <div class="context-cell"><strong>Who is affected:</strong> ${round.detail.who}</div>
+        <div class="context-cell"><strong>Immediate risk + hidden tension:</strong> ${round.detail.risk} ${round.detail.tension}</div>
+      `;
+      const riskHeat = (100 - ((state.reputation + state.cash + state.morale) / 3)).toFixed(0);
+      el.alertRibbon.textContent = `Overload feed: ${rand(3,6)} inbound escalations, ${rand(2,5)} unresolved dependencies, stress index ${riskHeat}/100. No safe option guaranteed.`;
+
       el.bubbles.innerHTML = "";
       el.choices.innerHTML = "";
-      el.flowOverlay.style.display = "none";
-      el.eventPopup.style.display = "none";
+      const sp = shuffle(voices);
+      bubble(`<div class='speaker'>${sp[0]}</div>"If we get this wrong, the next two rounds compound hard."`);
+      bubble(`<div class='speaker'>${sp[1]}</div>"We have partial data, loud stakeholders, and no time buffer left."`);
+      if (state.pendingDelayedApplied.length) {
+        bubble(`<div class='speaker'>Analyst note</div>"Carry-over effects are active this round: ${state.pendingDelayedApplied.join(" | ")}."`);
+      }
+      bubble(`<div class='speaker'>You</div>"Call it. Trade-offs are unavoidable."`, true);
 
-      const sp = shuffle(voices).slice(0, 2);
-      bubble(`<div class='speaker'>${sp[0]}</div>“${round.setup[0].split(": ")[1]}”`);
-      bubble(`<div class='speaker'>${sp[1]}</div>“${round.setup[1].split(": ")[1]}”`);
-      bubble(`<div class='speaker'>You</div>“We decide now. Keep this room focused.”`, true);
-
-      round.options.forEach((opt, idx) => {
+      round.options.forEach((o, idx) => {
         const btn = document.createElement("button");
         btn.className = "choice";
-        btn.textContent = `“${opt.text}”`;
+        btn.innerHTML = `<strong>${String.fromCharCode(65 + idx)}.</strong> ${o.text}<small>${o.logic}</small>`;
         btn.onclick = () => chooseOption(idx);
         el.choices.appendChild(btn);
       });
@@ -439,56 +679,51 @@
 
     function startTimer() {
       stopTimer();
-      state.timerDeadline = performance.now() + 30000;
+      state.timerDeadline = performance.now() + 24000;
       state.timerInterval = setInterval(updateTimer, 100);
       updateTimer();
     }
 
     function stopTimer() {
-      clearInterval(state.timerInterval); state.timerInterval = null;
-      clearTimeout(state.tickTimeout); state.tickTimeout = null;
+      clearInterval(state.timerInterval);
+      state.timerInterval = null;
     }
 
     function updateTimer() {
       const remaining = Math.max(0, state.timerDeadline - performance.now());
-      const seconds = (remaining / 1000).toFixed(1);
-      el.timerLabel.textContent = `${seconds}s`;
-      el.timerFill.style.width = `${(remaining / 30000) * 100}%`;
-      if (remaining > 20000) el.timerHint.textContent = "Ticking starts after 10s";
-      else if (remaining > 0) el.timerHint.textContent = "Clock is ticking faster...";
-      else el.timerHint.textContent = "Time up — indecision penalty applied";
-      scheduleTicks(remaining);
+      el.timerLabel.textContent = `${(remaining / 1000).toFixed(1)}s`;
+      el.timerFill.style.width = `${(remaining / 24000) * 100}%`;
+      el.timerHint.textContent = remaining > 8000 ? "Cross-functional channels are spiking" : "Decision latency now increases damage";
       if (remaining <= 0) {
         stopTimer();
-        if (!state.lockChoice) handleTimeout();
+        if (!state.locked) handleTimeout();
       }
     }
 
-    function scheduleTicks(remaining) {
-      if (remaining > 20000 || !state.soundOn || !state.audioReady || state.lockChoice) return;
-      if (state.tickTimeout) return;
-      const pressure = 1 - (remaining / 20000);
-      const spacing = Math.max(150, 900 - pressure * 720);
-      tickSound(1050 + pressure * 380, 0.018 + pressure * 0.012);
-      state.tickTimeout = setTimeout(() => {
-        state.tickTimeout = null;
-        if (!state.lockChoice) scheduleTicks(Math.max(0, state.timerDeadline - performance.now()));
-      }, spacing);
-    }
-
     function handleTimeout() {
-      bubble(`<div class='speaker'>Room</div>“Time expired. We moved with a defensive default response.”`);
-      const fallback = { text: "No clear decision in time", effect: { reputation: -6, cash: -5, morale: -7 } };
-      resolveRound(fallback, true);
+      bubble(`<div class='speaker'>Room</div>"No clear call. Default defensive action triggered under uncertainty."`);
+      resolveDecision({
+        text: "No clear decision (timeout default)",
+        logic: "Lost time under pressure",
+        effect: { reputation: -10, cash: -8, morale: -11 },
+        tags: ["caution"],
+        outcome: "Indecision amplified uncertainty and raised execution friction."
+      }, true);
     }
 
-    function chooseOption(index) {
-      if (state.lockChoice) return;
-      const round = state.rounds[state.roundIndex];
-      const choice = round.options[index];
-      bubble(`<div class='speaker'>You</div>“${choice.text}”`, true);
-      bubble(`<div class='speaker'>Room</div>“Decision logged. Executing now.”`);
-      resolveRound(choice, false);
+    function queueDelayedEffects(tags) {
+      if (tags.includes("honesty")) {
+        state.delayedQueue.push({ at: state.decisionIndex + rand(2, 3), label: "Earlier transparency restores internal trust", effect: { reputation: 3, cash: 0, morale: 4 }, kind: "delayed_good" });
+      }
+      if (tags.includes("protect_client")) {
+        state.delayedQueue.push({ at: state.decisionIndex + rand(2, 4), label: "Protected relationship unlocks supportive renewal", effect: { reputation: 2, cash: 6, morale: 1 }, kind: "delayed_good" });
+      }
+      if (tags.includes("corner_cut")) {
+        state.delayedQueue.push({ at: state.decisionIndex + rand(2, 3), label: "Earlier corner-cutting triggers follow-up quality failure", effect: { reputation: -7, cash: -6, morale: -4 }, kind: "delayed_bad" });
+      }
+      if (tags.includes("ignore_warning")) {
+        state.delayedQueue.push({ at: state.decisionIndex + rand(2, 4), label: "Ignored warning matures into avoidable emergency", effect: { reputation: -5, cash: -5, morale: -5 }, kind: "delayed_bad" });
+      }
     }
 
     function applyEffect(effect) {
@@ -498,140 +733,196 @@
       updateHUD();
     }
 
-    function resolveRound(choice, fromTimeout) {
-      state.lockChoice = true;
+    function chooseOption(idx) {
+      if (state.locked) return;
+      const option = state.rounds[state.decisionIndex].options[idx];
+      bubble(`<div class='speaker'>You</div>"${option.text}"`, true);
+      bubble(`<div class='speaker'>Room</div>"Decision logged. Executing under degraded conditions."`);
+      resolveDecision(option, false);
+    }
+
+    function resolveDecision(option, timedOut) {
+      state.locked = true;
       stopTimer();
-      el.choices.innerHTML = "";
 
-      const drift = { reputation: rand(-2, 2), cash: rand(-2, 2), morale: rand(-2, 2) };
-      const decisionEffect = {
-        reputation: choice.effect.reputation + drift.reputation,
-        cash: choice.effect.cash + drift.cash,
-        morale: choice.effect.morale + drift.morale
+      const lowPressure = [state.reputation, state.cash, state.morale].filter(v => v < 45).length;
+      const spiralPenalty = lowPressure * -2 + (Math.min(state.decisionIndex, 6) * -0.4);
+      const volatility = { reputation: rand(-3, 2), cash: rand(-3, 2), morale: rand(-3, 2) };
+      const effect = {
+        reputation: Math.round(option.effect.reputation + volatility.reputation + spiralPenalty),
+        cash: Math.round(option.effect.cash + volatility.cash + spiralPenalty),
+        morale: Math.round(option.effect.morale + volatility.morale + spiralPenalty)
       };
-      applyEffect(decisionEffect);
 
-      state.eventsLog.push({ round: state.roundIndex + 1, kind: "decision", text: fromTimeout ? "Timeout default action" : choice.text });
+      option.tags.forEach(tag => { if (state.behavior[tag] !== undefined) state.behavior[tag] += 1; });
+      queueDelayedEffects(option.tags || []);
 
-      showFlowOverlay("First progress view: immediate decision impact", decisionEffect);
+      applyEffect(effect);
+      state.decisionsLog.push({ round: state.decisionIndex + 1, text: option.text, logic: option.logic, outcome: option.outcome, effect });
+      state.eventsLog.push({ round: state.decisionIndex + 1, type: timedOut ? "timeout" : "decision", text: option.text });
 
-      setTimeout(() => {
-        const event = maybeRandomEvent();
-        if (event) {
-          showEventPopup(event);
-          applyEffect(event.effect);
-          state.eventsLog.push({ round: state.roundIndex + 1, kind: event.kind, tone: event.tone, text: event.text });
-          setTimeout(() => {
-            showFlowOverlay("Second progress view: updated after outside-world event", {
-              reputation: decisionEffect.reputation + event.effect.reputation,
-              cash: decisionEffect.cash + event.effect.cash,
-              morale: decisionEffect.morale + event.effect.morale
-            }, true);
-          }, 1300);
-        } else {
-          showFlowOverlay("Second progress view: no outside-world event this round", decisionEffect, true);
+      state.currentDecisionResult = {
+        round: state.decisionIndex + 1,
+        timedOut,
+        option,
+        effect,
+        delayedApplied: [...state.pendingDelayedApplied]
+      };
+
+      state.pendingDelayedApplied = [];
+      updateHistoryPoint();
+      showDebrief("decision");
+    }
+
+    function updateHistoryPoint() {
+      state.history.reputation.push(CLAMP(state.reputation));
+      state.history.cash.push(CLAMP(state.cash));
+      state.history.morale.push(CLAMP(state.morale));
+    }
+
+    function maybeOutsideEvent() {
+      if (Math.random() >= 0.30) return null;
+      return pick(OUTSIDE_EVENTS);
+    }
+
+    function processCarryOverForRound() {
+      const due = state.delayedQueue.filter(e => e.at === state.decisionIndex);
+      if (!due.length) return;
+      state.delayedQueue = state.delayedQueue.filter(e => e.at !== state.decisionIndex);
+      due.forEach(d => {
+        applyEffect(d.effect);
+        state.eventsLog.push({ round: state.decisionIndex + 1, type: d.kind, text: d.label });
+        state.pendingDelayedApplied.push(d.label);
+      });
+    }
+
+    function debriefNarrative(item) {
+      const e = item.effect;
+      const d = [];
+      d.push(`Immediate change: Reputation ${e.reputation >= 0 ? "+" : ""}${e.reputation}, Cash ${e.cash >= 0 ? "+" : ""}${e.cash}, Morale ${e.morale >= 0 ? "+" : ""}${e.morale}.`);
+      d.push(`Trade-off made: ${item.option.logic}.`);
+      d.push(`Operational consequence: ${item.option.outcome}`);
+      if (item.delayedApplied.length) d.push(`Carry-over effects this round: ${item.delayedApplied.join("; ")}.`);
+      return d;
+    }
+
+    function showDebrief(mode, eventInfo = null) {
+      drawGraph(el.graph);
+      const item = state.currentDecisionResult;
+      const lines = debriefNarrative(item);
+      if (mode === "decision") {
+        el.debriefEyebrow.textContent = `Round ${item.round} — consequence graph`;
+        el.debriefTitle.textContent = "Decision applied (first progress graph)";
+        el.debriefText.textContent = "Flow step 1 complete. You now review the immediate impact before any outside-world interruption.";
+        el.debriefNext.textContent = "Check for outside-world change";
+      } else {
+        el.debriefEyebrow.textContent = `Round ${item.round} — updated consequence graph`;
+        el.debriefTitle.textContent = "Outside-world impact integrated (second progress graph)";
+        el.debriefText.textContent = "Flow step 3 complete. The outside-world interruption has now been added to your trajectory.";
+        el.debriefNext.textContent = "Proceed to next decision";
+        lines.push(`Outside-world event effect: Reputation ${eventInfo.effect.reputation >= 0 ? "+" : ""}${eventInfo.effect.reputation}, Cash ${eventInfo.effect.cash >= 0 ? "+" : ""}${eventInfo.effect.cash}, Morale ${eventInfo.effect.morale >= 0 ? "+" : ""}${eventInfo.effect.morale}.`);
+      }
+      el.impactList.innerHTML = lines.map(x => `<li>${x}</li>`).join("");
+      state.phase = mode === "decision" ? "first_graph" : "second_graph";
+      setScreen(el.debrief);
+    }
+
+    function onDebriefNext() {
+      if (state.phase === "first_graph") {
+        const outside = maybeOutsideEvent();
+        if (!outside) {
+          advanceAfterRound();
+          return;
         }
-      }, 900);
-    }
-
-    function maybeRandomEvent() {
-      const roundsLeftIncludingCurrent = 10 - state.roundIndex;
-      const mustInjectTrumpNow = !state.trumpUsed && roundsLeftIncludingCurrent === 1;
-      const triggered = mustInjectTrumpNow || Math.random() < 0.30;
-      if (!triggered) return null;
-
-      let tone = Math.random() < 0.5 ? "good" : "bad";
-      if (mustInjectTrumpNow) tone = "bad";
-
-      if (tone === "bad" && !state.trumpUsed && (mustInjectTrumpNow || Math.random() < 0.35)) {
-        state.trumpUsed = true;
-        return { ...EVENTS.trump, tone: "bad", kind: "event_trump" };
-      }
-
-      if (tone === "bad") {
-        return { ...pick(EVENTS.bad), tone: "bad", kind: "event_bad" };
-      }
-      return { ...pick(EVENTS.good), tone: "good", kind: "event_good" };
-    }
-
-    function impactBarRow(name, v) {
-      const good = v >= 0;
-      const width = Math.min(100, Math.abs(v) * 8 + 8);
-      return `<div class='impact-row'><strong>${name}</strong><div class='impact-track'><div class='impact-fill ${good ? "good" : "bad"}' style='width:${width}%'></div></div><span>${v > 0 ? "+" : ""}${v}</span></div>`;
-    }
-
-    function showFlowOverlay(title, effect, showContinue = false) {
-      el.eventPopup.style.display = "none";
-      el.flowOverlay.style.display = "grid";
-      el.flowOverlay.innerHTML = `
-        <p class='eyebrow'>Round ${state.roundIndex + 1} progress</p>
-        <strong>${title}</strong>
-        ${impactBarRow("Reputation", effect.reputation)}
-        ${impactBarRow("Cash", effect.cash)}
-        ${impactBarRow("Morale", effect.morale)}
-        ${showContinue ? "<button id='openSummaryBtn' class='btn primary' style='margin-top:.2rem;'>Open round graph</button>" : ""}
-      `;
-      if (showContinue) {
-        document.getElementById("openSummaryBtn").addEventListener("click", () => {
-          el.flowOverlay.style.display = "none";
-          showSummary();
-        });
+        applyEffect(outside.effect);
+        state.eventsLog.push({ round: state.decisionIndex + 1, type: "outside", text: outside.title });
+        updateHistoryPoint();
+        state.awaitingSecondGraph = true;
+        state.pendingOutside = outside;
+        el.eventTitle.textContent = outside.title;
+        el.eventBody.textContent = outside.body;
+        el.eventList.innerHTML = [
+          `<li><strong>Why this hit now:</strong> external forces moved regardless of your internal plan.</li>`,
+          `<li><strong>Immediate impact:</strong> Reputation ${outside.effect.reputation >= 0 ? "+" : ""}${outside.effect.reputation}, Cash ${outside.effect.cash >= 0 ? "+" : ""}${outside.effect.cash}, Morale ${outside.effect.morale >= 0 ? "+" : ""}${outside.effect.morale}.</li>`,
+          `<li><strong>Strategic tension:</strong> your next decision starts from this updated baseline, not the previous one.</li>`
+        ].join("");
+        setScreen(el.eventScreen);
+      } else {
+        advanceAfterRound();
       }
     }
 
-    function showEventPopup(event) {
-      el.eventPopup.className = `event-popup ${event.tone}`;
-      el.eventPopup.innerHTML = `<strong>Outside-world event</strong><div style='margin-top:.2rem;'>${event.text}</div>`;
-      el.eventPopup.style.display = "block";
-      if (event.tone === "bad") stinger(220, 0.08); else stinger(620, 0.05);
-      bubble(`<div class='speaker'>Breaking</div>${event.text}`);
+    function advanceAfterRound() {
+      if (checkEarlyFailure()) {
+        finishSession();
+        return;
+      }
+      state.decisionIndex += 1;
+      if (state.decisionIndex >= 10) {
+        finishSession();
+        return;
+      }
+      processCarryOverForRound();
+      renderDecision();
     }
 
-    function describe(v, label) {
-      if (v >= 9) return `${label} jumped sharply.`;
-      if (v >= 3) return `${label} improved.`;
-      if (v > -3) return `${label} stayed nearly flat.`;
-      if (v > -9) return `${label} dropped.`;
-      return `${label} fell hard.`;
+    function onEventContinue() {
+      showDebrief("outside", state.pendingOutside);
+      state.pendingOutside = null;
+    }
+
+    function checkEarlyFailure() {
+      const avg = (state.reputation + state.cash + state.morale) / 3;
+      if (state.reputation <= 0 || state.cash <= 0 || state.morale <= 0 || avg < 18) {
+        state.sessionEndedEarly = true;
+        return true;
+      }
+      return false;
     }
 
     function projectedSeries(values) {
       const out = [...values];
-      while (out.length < 10) {
+      while (out.length < 11) {
         const n = out.length;
-        const d1 = n > 1 ? out[n - 1] - out[n - 2] : 0;
-        const d2 = n > 2 ? out[n - 2] - out[n - 3] : d1;
-        const slope = d1 * 0.7 + d2 * 0.3;
-        out.push(clamp(out[n - 1] + slope * 0.82));
+        const start = Math.max(0, n - 4);
+        const seg = out.slice(start, n);
+        let slope = 0;
+        if (seg.length > 1) {
+          for (let i = 1; i < seg.length; i++) slope += seg[i] - seg[i - 1];
+          slope /= (seg.length - 1);
+        }
+        const towardMid = (55 - out[n - 1]) * 0.08;
+        out.push(CLAMP(out[n - 1] + slope * 0.62 + towardMid));
       }
       return out;
     }
 
-    function drawGraph() {
-      const ctx = el.graph.getContext("2d");
-      const W = el.graph.width, H = el.graph.height;
+    function drawGraph(canvas) {
+      const ctx = canvas.getContext("2d");
+      const W = canvas.width, H = canvas.height;
       ctx.clearRect(0, 0, W, H);
       ctx.fillStyle = "#0b1321";
       ctx.fillRect(0, 0, W, H);
 
-      const pad = { l: 58, r: 20, t: 18, b: 48 };
+      const pad = { l: 64, r: 24, t: 20, b: 90 };
       const pw = W - pad.l - pad.r;
       const ph = H - pad.t - pad.b;
-      const x = i => pad.l + ((i - 1) / 9) * pw;
+      const maxRounds = 10;
+      const x = i => pad.l + ((i - 1) / (maxRounds - 1)) * pw;
       const y = v => pad.t + ((100 - v) / 100) * ph;
 
       for (let gy = 0; gy <= 5; gy++) {
         const val = 100 - gy * 20;
         const yy = y(val);
-        ctx.strokeStyle = "rgba(126,149,183,.28)";
+        ctx.strokeStyle = "rgba(126,149,183,.26)";
         ctx.beginPath(); ctx.moveTo(pad.l, yy); ctx.lineTo(W - pad.r, yy); ctx.stroke();
-        ctx.fillStyle = "#98b4d8"; ctx.font = "11px sans-serif"; ctx.fillText(String(val), 16, yy + 4);
+        ctx.fillStyle = "#98b4d8"; ctx.font = "12px sans-serif"; ctx.fillText(String(val), 20, yy + 4);
       }
-      for (let gx = 1; gx <= 10; gx++) {
+      for (let gx = 1; gx <= maxRounds; gx++) {
         const xx = x(gx);
-        ctx.strokeStyle = "rgba(126,149,183,.2)";
+        ctx.strokeStyle = "rgba(126,149,183,.18)";
         ctx.beginPath(); ctx.moveTo(xx, pad.t); ctx.lineTo(xx, H - pad.b); ctx.stroke();
-        ctx.fillStyle = "#91aed3"; ctx.font = "11px sans-serif"; ctx.fillText(String(gx), xx - 4, H - 30);
+        ctx.fillStyle = "#91aed3"; ctx.font = "11px sans-serif"; ctx.fillText(String(gx), xx - 3, H - 66);
       }
 
       const lines = [
@@ -643,101 +934,111 @@
       lines.forEach(line => {
         const actual = state.history[line.key];
         const projected = projectedSeries(actual);
+        const seen = Math.min(actual.length - 1, 10);
 
-        ctx.lineWidth = 2.5; ctx.strokeStyle = line.color; ctx.beginPath();
-        actual.forEach((v, idx) => {
-          const xx = x(idx + 1), yy = y(v);
-          idx ? ctx.lineTo(xx, yy) : ctx.moveTo(xx, yy);
-        });
+        ctx.lineWidth = 2.6; ctx.strokeStyle = line.color; ctx.beginPath();
+        for (let i = 1; i <= seen; i++) {
+          const xx = x(i), yy = y(actual[i - 1]);
+          i === 1 ? ctx.moveTo(xx, yy) : ctx.lineTo(xx, yy);
+        }
         ctx.stroke();
 
-        ctx.setLineDash([7, 6]);
-        ctx.strokeStyle = `${line.color}bb`;
-        ctx.lineWidth = 2;
+        ctx.setLineDash([6, 5]);
+        ctx.strokeStyle = `${line.color}bb`; ctx.lineWidth = 2;
         ctx.beginPath();
-        const start = actual.length;
-        ctx.moveTo(x(start), y(actual[start - 1]));
-        for (let i = start; i <= 10; i++) ctx.lineTo(x(i), y(projected[i - 1]));
+        ctx.moveTo(x(seen), y(actual[seen - 1]));
+        for (let i = seen + 1; i <= maxRounds; i++) ctx.lineTo(x(i), y(projected[i - 1]));
         ctx.stroke();
         ctx.setLineDash([]);
       });
 
-      state.eventsLog.filter(e => e.kind === "decision").forEach(e => {
+      state.eventsLog.filter(e => e.type === "decision" || e.type === "timeout").forEach(e => {
+        if (e.round > 10) return;
         const xx = x(e.round);
         ctx.fillStyle = "#67b3ff";
-        ctx.beginPath(); ctx.arc(xx, H - 17, 4, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(xx, H - 56, 4.6, 0, Math.PI * 2); ctx.fill();
       });
-
-      state.eventsLog.filter(e => e.kind.startsWith("event")).forEach(e => {
+      state.eventsLog.filter(e => e.type === "outside").forEach(e => {
+        if (e.round > 10) return;
         const xx = x(e.round);
-        ctx.fillStyle = e.tone === "good" ? "#7edfa9" : "#ff8391";
-        ctx.beginPath();
-        ctx.moveTo(xx, H - 24); ctx.lineTo(xx - 6, H - 12); ctx.lineTo(xx + 6, H - 12); ctx.closePath();
-        ctx.fill();
+        ctx.fillStyle = "#ff8a97";
+        ctx.beginPath(); ctx.moveTo(xx, H - 66); ctx.lineTo(xx - 6, H - 52); ctx.lineTo(xx + 6, H - 52); ctx.closePath(); ctx.fill();
       });
 
       ctx.fillStyle = "#98b4d8";
       ctx.font = "12px sans-serif";
-      ctx.fillText(`Current round: ${state.roundIndex + 1} / 10`, pad.l, H - 10);
-      ctx.fillStyle = "#74aeff"; ctx.fillText("Reputation", 250, H - 10);
-      ctx.fillStyle = "#79d49d"; ctx.fillText("Cash", 345, H - 10);
-      ctx.fillStyle = "#ffc87f"; ctx.fillText("Morale", 400, H - 10);
-      ctx.fillStyle = "#67b3ff"; ctx.fillText("● Decision", 500, H - 10);
-      ctx.fillStyle = "#ff8391"; ctx.fillText("▲ External event", 590, H - 10);
-    }
+      ctx.fillText(`Current decision: ${Math.min(state.decisionIndex + 1, 10)} / 10`, pad.l, H - 40);
 
-    function showSummary() {
-      state.history.reputation.push(clamp(state.reputation));
-      state.history.cash.push(clamp(state.cash));
-      state.history.morale.push(clamp(state.morale));
-
-      const logs = state.eventsLog.filter(e => e.round === state.roundIndex + 1);
-      const lastDecision = logs.find(l => l.kind === "decision");
-      const outside = logs.find(l => l.kind.startsWith("event"));
-
-      el.summaryTitle.textContent = `Round ${state.roundIndex + 1} debrief`;
-      el.summaryText.textContent = outside
-        ? `Decision resolved, then an outside-world event hit this round. Flow executed as: decision → first progress view → event popup → second progress view.`
-        : `Decision resolved with no outside-world event this round. Flow executed as: decision → first progress view → second progress view.`;
-
-      const prevR = state.history.reputation[state.history.reputation.length - 2];
-      const prevC = state.history.cash[state.history.cash.length - 2];
-      const prevM = state.history.morale[state.history.morale.length - 2];
-      const points = [
-        `Decision: ${lastDecision.text}`,
-        describe(state.reputation - prevR, "Reputation"),
-        describe(state.cash - prevC, "Cash"),
-        describe(state.morale - prevM, "Morale")
+      const legendY = H - 20;
+      const legend = [
+        { color: "#74aeff", text: "Reputation" },
+        { color: "#79d49d", text: "Cash" },
+        { color: "#ffc87f", text: "Morale" },
+        { color: "#67b3ff", text: "● Decision" },
+        { color: "#ff8a97", text: "▲ Outside-world event" }
       ];
-      if (outside) points.push(`Outside-world event: ${outside.text}`);
-      el.summaryList.innerHTML = points.map(p => `<li>${p}</li>`).join("");
-
-      drawGraph();
-      setScreen(el.roundSummary);
+      let offset = pad.l;
+      legend.forEach(item => {
+        ctx.fillStyle = item.color;
+        ctx.fillText(item.text, offset, legendY);
+        offset += ctx.measureText(item.text).width + 28;
+      });
     }
 
-    function nextRound() {
-      state.roundIndex += 1;
-      if (state.roundIndex >= 10) return finishSession();
-      renderRound();
+    function deriveLeadership() {
+      const b = state.behavior;
+      const avg = (state.reputation + state.cash + state.morale) / 3;
+      if (b.honesty >= 4 && b.empathy >= 3 && avg >= 58) {
+        return { label: "Transparent Builder", text: "You repeatedly chose open communication and people-aware execution, then translated trust into survivable outcomes." };
+      }
+      if (b.bold >= 4 && b.risk >= 3 && state.cash > state.reputation) {
+        return { label: "Visionary Gambler", text: "You favored speed and upside bets; cash sometimes improved, but volatility stayed high." };
+      }
+      if (b.caution >= 4 && avg >= 52) {
+        return { label: "Crisis Stabilizer", text: "You prioritized containment and operational continuity, sacrificing upside for fewer catastrophic misses." };
+      }
+      if (b.corner_cut >= 3 || avg < 40) {
+        return { label: "Reactive Firefighter", text: "You spent much of the session patching secondary crises triggered by earlier shortcuts." };
+      }
+      if (b.empathy >= 4 && state.morale >= state.cash) {
+        return { label: "People-First Leader", text: "You absorbed economic pain to protect team resilience and long-term execution capacity." };
+      }
+      return { label: "Ruthless Operator", text: "You optimized for immediate control under pressure, often at trust and morale cost." };
     }
 
     function finishSession() {
-      if (!state.trumpUsed) {
-        state.eventsLog.push({ round: 10, kind: "event_trump", tone: "bad", text: EVENTS.trump.text });
-      }
+      drawGraph(el.finalGraph);
       const avg = Math.round((state.reputation + state.cash + state.morale) / 3);
-      if (avg >= 72) {
-        el.finalTitle.textContent = "Strong Stabilization";
-        el.finalText.textContent = "You finished all 10 rounds with resilient momentum under pressure.";
+      const failed = state.sessionEndedEarly;
+      if (failed) {
+        el.finalTitle.textContent = `Company breakdown at decision ${state.decisionIndex + 1}`;
+        el.finalText.textContent = "You entered a downward spiral before completing all 10 decisions. Damage compounds outpaced recovery capacity.";
+      } else if (avg >= 70) {
+        el.finalTitle.textContent = "Hard-fought stabilization across all 10 decisions";
+        el.finalText.textContent = "You navigated overload conditions with enough discipline and adaptive trade-offs to end in control.";
       } else if (avg >= 50) {
-        el.finalTitle.textContent = "Volatile but Survived";
-        el.finalText.textContent = "You completed all 10 rounds, though structural weaknesses remain visible.";
+        el.finalTitle.textContent = "Survived, but structurally fragile";
+        el.finalText.textContent = "You completed 10 decisions, but unresolved tensions remain and one bad shock could reverse momentum.";
       } else {
-        el.finalTitle.textContent = "Severe Stress at Session End";
-        el.finalText.textContent = "You completed all 10 rounds, but conditions are fragile and high-risk.";
+        el.finalTitle.textContent = "Exhausted organization at session end";
+        el.finalText.textContent = "You reached the end of 10 decisions, but repeated trade-offs left the company highly unstable.";
       }
-      el.finalScores.textContent = `Final metrics — Reputation ${clamp(state.reputation)}, Cash ${clamp(state.cash)}, Morale ${clamp(state.morale)}.`;
+      const leader = deriveLeadership();
+      el.leaderType.textContent = `Leadership profile: ${leader.label}. ${leader.text}`;
+      el.finalScores.textContent = `Final metrics — Reputation ${CLAMP(state.reputation)}, Cash ${CLAMP(state.cash)}, Morale ${CLAMP(state.morale)}.`;
+
+      el.decisionLog.innerHTML = state.decisionsLog.map(d => `<li><strong>R${d.round}:</strong> ${d.text}<br><span class='muted'>Outcome: ${d.outcome}</span></li>`).join("");
+      el.eventLog.innerHTML = state.eventsLog.filter(e => e.type !== "decision" && e.type !== "timeout").map(e => `<li><strong>R${e.round}:</strong> ${e.text}</li>`).join("") || "<li>No outside-world events triggered.</li>";
+
+      const turns = [];
+      const minMetric = Math.min(state.reputation, state.cash, state.morale);
+      if (minMetric < 30) turns.push("A severe low-metric dip created compounding penalties and reduced future option quality.");
+      if (state.eventsLog.filter(e => e.type === "outside").length >= 3) turns.push("Frequent outside-world interruptions repeatedly reset your baseline and increased volatility.");
+      if (state.eventsLog.some(e => e.type === "delayed_bad")) turns.push("Earlier shortcuts returned later as delayed strategic damage.");
+      if (state.eventsLog.some(e => e.type === "delayed_good")) turns.push("At least one early trust-building choice generated delayed support in later rounds.");
+      if (!turns.length) turns.push("No single pivot dominated; outcome was driven by cumulative micro trade-offs.");
+      el.turningPoints.innerHTML = turns.map(t => `<li>${t}</li>`).join("");
+
       setScreen(el.final);
     }
 
@@ -746,94 +1047,11 @@
       setScreen(el.menu);
     }
 
-    function initAudio() {
-      if (state.audioReady) return;
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      masterGain = audioCtx.createGain();
-      musicGain = audioCtx.createGain();
-      masterGain.gain.value = 0.12;
-      musicGain.gain.value = 0;
-      musicGain.connect(masterGain).connect(audioCtx.destination);
-
-      const notes = [261.63, 329.63, 392.0, 293.66, 349.23, 440.0, 246.94, 311.13, 392.0];
-      let idx = 0;
-      setInterval(() => {
-        if (!state.soundOn || !state.audioReady) return;
-        const now = audioCtx.currentTime;
-        const o = audioCtx.createOscillator();
-        const g = audioCtx.createGain();
-        const wobble = audioCtx.createOscillator();
-        const wobGain = audioCtx.createGain();
-        o.type = "triangle";
-        o.frequency.value = notes[idx % notes.length] * (idx % 3 === 0 ? 0.5 : 1);
-        wobble.frequency.value = 4.2;
-        wobGain.gain.value = 2.2;
-        wobble.connect(wobGain).connect(o.frequency);
-        g.gain.setValueAtTime(0.0001, now);
-        g.gain.exponentialRampToValueAtTime(0.025, now + 0.07);
-        g.gain.exponentialRampToValueAtTime(0.0001, now + 0.55);
-        o.connect(g).connect(musicGain);
-        o.start(now); wobble.start(now);
-        o.stop(now + 0.58); wobble.stop(now + 0.58);
-        idx++;
-      }, 650);
-
-      state.audioReady = true;
-      setSound(state.soundOn);
-    }
-
-    function setSound(on) {
-      state.soundOn = on;
-      el.soundBtn.textContent = on ? "🔊 Sound: On" : "🔈 Sound: Off";
-      if (!state.audioReady) return;
-      const t = audioCtx.currentTime;
-      musicGain.gain.setTargetAtTime(on ? 0.95 : 0, t, 0.2);
-    }
-
-    function tickSound(freq, vol) {
-      if (!state.soundOn || !state.audioReady) return;
-      const o = audioCtx.createOscillator();
-      const g = audioCtx.createGain();
-      o.type = "square";
-      o.frequency.value = freq;
-      g.gain.value = vol;
-      o.connect(g).connect(masterGain);
-      o.start();
-      g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.04);
-      o.stop(audioCtx.currentTime + 0.045);
-    }
-
-    function stinger(freq, vol) {
-      if (!state.soundOn || !state.audioReady) return;
-      const o = audioCtx.createOscillator();
-      const g = audioCtx.createGain();
-      o.type = "sawtooth";
-      o.frequency.value = freq;
-      g.gain.value = vol;
-      o.connect(g).connect(masterGain);
-      o.start();
-      g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.09);
-      o.stop(audioCtx.currentTime + 0.095);
-    }
-
     document.querySelectorAll(".company-card").forEach(btn => btn.addEventListener("click", () => startGame(btn.dataset.company)));
     document.getElementById("backMenu").addEventListener("click", goMenu);
     document.getElementById("playAgain").addEventListener("click", goMenu);
-    el.nextRoundBtn.addEventListener("click", nextRound);
-
-    el.soundBtn.addEventListener("click", async () => {
-      if (!state.audioReady) initAudio();
-      if (audioCtx && audioCtx.state === "suspended") await audioCtx.resume();
-      setSound(!state.soundOn);
-    });
-
-    document.body.addEventListener("pointerdown", async () => {
-      if (!state.audioReady) initAudio();
-      if (audioCtx && audioCtx.state === "suspended") {
-        try { await audioCtx.resume(); } catch (e) {}
-      }
-      setSound(state.soundOn);
-    }, { once: true });
+    el.debriefNext.addEventListener("click", onDebriefNext);
+    el.eventContinue.addEventListener("click", onEventContinue);
   </script>
 </body>
 </html>
