@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Crisis Mode</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="app-shell" id="app">
+    <section id="start-screen" class="screen card active" aria-live="polite">
+      <p class="eyebrow">Serious Game Prototype</p>
+      <h1>Crisis Mode</h1>
+      <p class="subtitle">
+        You are the founder of a fast-growing startup facing cascading crises.
+        Balance <strong>Reputation</strong>, <strong>Cash</strong>, and <strong>Team Morale</strong>
+        through five pressure rounds.
+      </p>
+
+      <div class="actions-row">
+        <button id="start-btn" class="btn btn-primary">Start Game</button>
+        <button id="how-btn" class="btn btn-ghost" aria-expanded="false" aria-controls="how-panel">How to Play</button>
+      </div>
+
+      <div id="how-panel" class="how-panel" hidden>
+        <ul>
+          <li>Choose one action each round. Every choice has trade-offs.</li>
+          <li>Some choices create <strong>delayed consequences</strong> in later rounds.</li>
+          <li>If any core metric hits 0, your startup collapses immediately.</li>
+          <li>Survive all 5 rounds to win and receive your leadership profile.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="game-screen" class="screen" aria-live="polite">
+      <header class="top-bar card">
+        <div>
+          <p class="eyebrow">Founder Dashboard</p>
+          <h2 id="round-label">Round 1 of 5</h2>
+        </div>
+        <div class="badge" id="company-state">Startup Live</div>
+      </header>
+
+      <section class="metrics-grid card" aria-label="Company metrics">
+        <article class="metric">
+          <div class="metric-head">
+            <span>Reputation</span>
+            <strong id="rep-value">60</strong>
+          </div>
+          <div class="meter"><div id="rep-bar" class="fill rep"></div></div>
+        </article>
+        <article class="metric">
+          <div class="metric-head">
+            <span>Cash</span>
+            <strong id="cash-value">60</strong>
+          </div>
+          <div class="meter"><div id="cash-bar" class="fill cash"></div></div>
+        </article>
+        <article class="metric">
+          <div class="metric-head">
+            <span>Team Morale</span>
+            <strong id="morale-value">60</strong>
+          </div>
+          <div class="meter"><div id="morale-bar" class="fill morale"></div></div>
+        </article>
+      </section>
+
+      <section class="card crisis-card">
+        <p class="eyebrow">Current Crisis</p>
+        <h3 id="crisis-title"></h3>
+        <p id="crisis-description"></p>
+        <div id="carryover-note" class="carryover hidden"></div>
+      </section>
+
+      <section class="card choices-card">
+        <p class="eyebrow">Your Decision</p>
+        <div id="choices-container" class="choices-list" role="group" aria-label="Decision choices"></div>
+      </section>
+
+      <section id="feedback-card" class="card feedback hidden" aria-live="assertive">
+        <p class="eyebrow">Immediate Consequence</p>
+        <h4 id="feedback-title">Decision Logged</h4>
+        <p id="feedback-text"></p>
+        <div id="feedback-delta" class="delta"></div>
+        <button id="continue-btn" class="btn btn-primary">Continue</button>
+      </section>
+    </section>
+
+    <section id="end-screen" class="screen card" aria-live="polite">
+      <p class="eyebrow">Debrief</p>
+      <h2 id="end-title"></h2>
+      <p id="end-summary" class="subtitle"></p>
+
+      <section class="debrief-grid">
+        <article class="debrief-panel">
+          <h3>Final Metrics</h3>
+          <ul id="final-metrics" class="simple-list"></ul>
+        </article>
+
+        <article class="debrief-panel">
+          <h3>Leadership Profile</h3>
+          <p id="leadership-profile"></p>
+        </article>
+      </section>
+
+      <section class="debrief-panel">
+        <h3>Decision History</h3>
+        <ol id="decision-history" class="history-list"></ol>
+      </section>
+
+      <section class="debrief-panel">
+        <h3>Turning Points</h3>
+        <ul id="turning-points" class="simple-list"></ul>
+      </section>
+
+      <section class="debrief-panel reflection">
+        <h3>Reflection Prompt</h3>
+        <p>What would you do differently?</p>
+        <textarea id="reflection" rows="4" placeholder="Write your founder reflection here..."></textarea>
+      </section>
+
+      <button id="restart-btn" class="btn btn-primary">Play Again</button>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
