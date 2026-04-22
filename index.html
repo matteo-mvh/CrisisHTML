@@ -67,7 +67,7 @@
       gap: .7rem;
     }
 
-    .hud { display: grid; grid-template-columns: repeat(4,1fr); gap: .55rem; }
+    .hud { display: grid; grid-template-columns: repeat(5,1fr); gap: .55rem; }
     .pill { padding: .55rem .65rem; border-radius: 10px; border: 1px solid #32457f; background: #0f1737; }
     .pill strong { display: block; font-size: 1.1rem; margin-top: .2rem; }
 
@@ -93,12 +93,17 @@
     .choice:disabled { opacity: .7; }
 
     .feed-wrap { display:grid; gap: .55rem; max-height: 420px; overflow: auto; }
-    .feed-item { border:1px solid #3a4e8b; background:#0f1838; border-radius:10px; padding:.55rem .6rem; font-size:.9rem; }
+    .feed-item { border:1px solid #3a4e8b; background:#0f1838; border-radius:10px; padding:.55rem .6rem; font-size:.9rem; transition: transform .25s ease, opacity .25s ease; animation: slideIn .28s ease; }
     .feed-item.alert { border-color:#8d2939; background:#281622; }
     .feed-item.good { border-color:#2f7f5e; background:#102921; }
+    .feed-item.urgent { border-color:#b24b28; background:#2b1f11; box-shadow: 0 0 0 1px rgba(255,155,88,.22) inset; }
+    @keyframes slideIn { from { opacity:0; transform: translateY(6px);} to { opacity:1; transform: translateY(0);} }
 
     .carry { border-left: 3px solid var(--warn); padding-left: .6rem; color: #ffe4b1; margin-top: .5rem; }
     .hidden { display:none; }
+    .interrupts { position: fixed; right: 1rem; top: 1rem; display: grid; gap: .5rem; z-index: 9; width: min(360px, 90vw); pointer-events: none; }
+    .interrupt { border: 1px solid #6a3f25; background: linear-gradient(180deg,#3c2617,#25170f); color: #ffe6cc; border-radius: 10px; padding: .55rem .65rem; animation: urgentPop 4s ease forwards; box-shadow: 0 6px 18px rgba(0,0,0,.35); font-size: .88rem; }
+    @keyframes urgentPop { 0% { opacity:0; transform: translateY(-8px);} 10%,80% { opacity:1; transform: translateY(0);} 100% { opacity:0; transform: translateY(-6px);} }
 
     .summary-list { margin: 0; padding-left: 1rem; color:#dae4ff; line-height:1.5; }
 
@@ -141,6 +146,7 @@
           <div class="pill"><span>Startup Type</span><strong id="type-label">—</strong></div>
           <div class="pill"><span>In-game clock</span><strong id="clock">Day 1 • 09:00</strong></div>
           <div class="pill timer" id="timer-pill"><span>Decision timer</span><strong id="timer">20s</strong></div>
+          <div class="pill"><span>Runway clock</span><strong id="runway">72h left</strong></div>
           <div class="pill"><span>Status</span><strong id="status">Operational</strong></div>
         </div>
       </section>
@@ -198,6 +204,7 @@
       <button id="restart" class="btn btn-primary">Play Again</button>
     </section>
   </main>
+  <section id="interrupts" class="interrupts"></section>
 
   <script>
     const TOTAL_ROUNDS = 7;
@@ -271,6 +278,41 @@
         ch("Pause risky operations and self-report", { reputation:+1, cash:-7, morale:+2 }, { ethics:3, transparency:2 }, [f("regulator_trust",2,{reputation:+3},"Proactive cooperation reduced external pressure.")], "Short-term slowdown, long-term protection."),
         ch("Quietly patch process and avoid disclosure", { reputation:-2, cash:-2, morale:-2 }, { transparency:-2, risk:1 }, [f("audit_hit",2,{reputation:-6,cash:-4},"Audit findings amplified penalties.")], "You minimized disruption, increased downside."),
         ch("Challenge regulator interpretation publicly", { reputation:-4, cash:+1, morale:-1 }, { risk:2, decisiveness:1, ethics:-1 }, [f("legal_spend",2,{cash:-6,reputation:-2},"Legal dispute became expensive.")], "Strong stance with uncertain payoff.")
+      ),
+      mk("pricing-shock", ["fintech","tech","creative"], "Pricing model backlash after update", "Customers reacted harshly to your revised pricing tiers overnight.", 16, 5,
+        ch("Offer transparent migration path and office hours", { reputation:+3, cash:-4, morale:+2 }, { transparency:2, empathy:2 }, [f("retention_lift",2,{cash:+3,reputation:+2},"Customers accepted phased migration.")], "You absorbed short-term pain to rebuild trust."),
+        ch("Roll back all changes immediately", { reputation:+1, cash:-6, morale:+1 }, { risk:-1, decisiveness:1 }, [f("strategy_whiplash",2,{morale:-2},"Team confidence dipped from fast reversal.")], "Backlash cooled, roadmap clarity weakened."),
+        ch("Keep new pricing and tighten support scripts", { reputation:-4, cash:+5, morale:-2 }, { risk:2, empathy:-1 }, [f("churn_wave",2,{cash:-4,reputation:-3},"Higher churn offset near-term gains.")], "Revenue rose briefly while trust slipped.")
+      ),
+      mk("security-audit", ["health","fintech","tech"], "External security audit fails critical controls", "An enterprise prospect pauses contract until controls are verified.", 14, 6,
+        ch("Freeze feature work and remediate controls", { reputation:+2, cash:-7, morale:-1 }, { prioritization:2, ethics:2 }, [f("enterprise_unlock",3,{cash:+6,reputation:+2},"Prospect resumed contract review.")], "You sacrificed speed to protect trust."),
+        ch("Ship roadmap while patching in parallel", { reputation:-2, cash:+2, morale:-3 }, { risk:2, decisiveness:1 }, [f("second_failure",2,{reputation:-5},"Follow-up audit found unresolved issues.")], "Velocity held, audit confidence fell."),
+        ch("Limit scope to pass minimum requirements", { reputation:0, cash:-3, morale:+1 }, { prioritization:1, risk:1 }, [f("latent_gap",3,{reputation:-3,cash:-2},"Gaps resurfaced in procurement review.")], "You bought time with a narrow fix.")
+      ),
+      mk("clinical-partner", ["health"], "Clinical partner questions your data claims", "A hospital partner requests stronger evidence before continuing pilot expansion.", 15, 5,
+        ch("Open methodology and invite independent review", { reputation:+3, cash:-5, morale:+2 }, { transparency:2, ethics:2 }, [f("peer_support",2,{reputation:+3},"External experts validated your methods.")], "Scientific rigor strengthened credibility."),
+        ch("Share selective data and promise full report later", { reputation:-2, cash:-1, morale:-1 }, { transparency:-1, risk:1 }, [f("credibility_gap",2,{reputation:-4},"Selective disclosure raised skepticism.")], "You retained momentum but weakened trust."),
+        ch("Pause expansion and rebuild dataset quality", { reputation:+1, cash:-6, morale:+1 }, { prioritization:2, risk:-1 }, [f("slower_growth",2,{cash:-2,reputation:+1},"Slower rollout reduced long-term risk.")], "Conservative move protected quality.")
+      ),
+      mk("carbon-claim", ["green"], "Carbon reduction claims are challenged", "An NGO report questions assumptions in your lifecycle model.", 14, 5,
+        ch("Publish assumptions and third-party verification timeline", { reputation:+2, cash:-4, morale:+2 }, { transparency:2, ethics:2 }, [f("claim_recovery",2,{reputation:+3},"Verification restored confidence.")], "Transparency shifted tone."),
+        ch("Issue brief statement and move on", { reputation:-3, cash:+1, morale:-1 }, { transparency:-1, risk:1 }, [f("narrative_loss",2,{reputation:-3},"Story was defined by critics.")], "You protected focus but lost narrative control."),
+        ch("Attack report methodology publicly", { reputation:-5, cash:0, morale:-2 }, { risk:2, empathy:-2 }, [f("activist_push",1,{reputation:-3},"Pushback amplified outside scrutiny.")], "Confrontation intensified attention.")
+      ),
+      mk("creative-leak", ["creative","tech"], "Unreleased campaign concept leaks online", "The leaked draft is unfinished and receiving harsh comments.", 13, 5,
+        ch("Acknowledge leak and share finished vision teaser", { reputation:+2, cash:-2, morale:+2 }, { transparency:2, decisiveness:1 }, [f("hype_rebound",2,{reputation:+2,cash:+2},"Managed reveal generated positive buzz.")], "You reframed the story."),
+        ch("Issue takedown notices only", { reputation:-2, cash:-3, morale:-1 }, { risk:-1, transparency:-1 }, [f("streisand_effect",1,{reputation:-3},"Takedowns drew more attention.")], "Control attempt backfired."),
+        ch("Rush the full launch this week", { reputation:-1, cash:+3, morale:-4 }, { decisiveness:2, risk:2 }, [f("quality_drag",2,{reputation:-3,morale:-2},"Rushed launch quality hurt reception.")], "Speed won but polish suffered.")
+      ),
+      mk("fraud-spike", ["fintech"], "Fraud alerts spike during peak transactions", "Risk systems are flagging legitimate users and possible abuse simultaneously.", 12, 7,
+        ch("Tighten controls and communicate temporary friction", { reputation:+1, cash:-4, morale:+1 }, { prioritization:2, ethics:1 }, [f("fraud_drop",2,{cash:+3,reputation:+1},"Fraud losses declined after tuning.")], "Losses controlled with short-term friction."),
+        ch("Loosen controls to protect conversion", { reputation:-3, cash:+4, morale:-1 }, { risk:3 }, [f("chargeback_wave",1,{cash:-6,reputation:-4},"Chargebacks surged.")], "Conversion improved, abuse increased."),
+        ch("Pause high-risk corridor transactions", { reputation:-1, cash:-2, morale:+2 }, { decisiveness:2, risk:-1 }, [f("partner_relief",2,{reputation:+2},"Partners valued visible containment.")], "Conservative containment reduced blast radius.")
+      ),
+      mk("enterprise-renewal", ["tech","health","fintech"], "Largest enterprise renewal is at risk", "Procurement cites missed SLAs and asks for concessions.", 17, 5,
+        ch("Offer service credits plus recovery roadmap", { reputation:+2, cash:-5, morale:+2 }, { empathy:1, prioritization:2 }, [f("renewal_saved",2,{cash:+6},"Account renewed with reduced churn risk.")], "Concession bought trust and time."),
+        ch("Hold pricing firm and escalate to executives", { reputation:-2, cash:+2, morale:-2 }, { risk:1, decisiveness:1 }, [f("renewal_loss",2,{cash:-7,reputation:-2},"Contract downsized after negotiations.")], "Margin protected, relationship strained."),
+        ch("Accept steep contract cuts to preserve logo", { reputation:+1, cash:-6, morale:+1 }, { risk:-1, prioritization:1 }, [f("margin_pressure",3,{cash:-3},"Reduced margin constrained hiring.")], "Brand win with financial drag.")
       )
     ];
 
@@ -288,6 +330,13 @@
       { t: "Team lead posts appreciation for clear direction.", effects: { morale: +2 } },
       { t: "A partner offers a short extension after quick update.", effects: { reputation: +1 } }
     ];
+    const urgentBursts = [
+      { t: "Breaking update: board observer requests an immediate progress note.", effects: { reputation:-1 } },
+      { t: "Support dashboard: unresolved tickets crossed internal threshold.", effects: { reputation:-1, morale:-1 } },
+      { t: "Message from finance: invoice auto-payment failed, retry in 2 hours.", effects: { cash:-2 } },
+      { t: "Customer success ping: 'Top client wants a live status call now.'", effects: { reputation:-1 } },
+      { t: "Engineering alert: background jobs delayed; data exports are late.", effects: { reputation:-1, cash:-1 } }
+    ];
 
     const state = {
       chosenType: "tech",
@@ -301,10 +350,12 @@
       turning: [],
       clockHour: 9,
       day: 1,
+      runwayHours: 72,
       activeScenario: null,
       timer: null,
       timerLeft: 0,
       eventTimer: null,
+      burstTimer: null,
       pending: false,
       gameOver: false,
       result: ""
@@ -314,7 +365,7 @@
     const refs = {
       start: $("start"), game: $("game"), end: $("end"),
       typeGrid: $("type-grid"), startBtn: $("start-btn"), howBtn: $("how-btn"), how: $("how"),
-      round: $("round-label"), flavor: $("flavor"), typeLabel: $("type-label"), clock: $("clock"), timer: $("timer"), timerPill: $("timer-pill"), status: $("status"),
+      round: $("round-label"), flavor: $("flavor"), typeLabel: $("type-label"), clock: $("clock"), timer: $("timer"), timerPill: $("timer-pill"), runway: $("runway"), status: $("status"),
       repV: $("rep-v"), cashV: $("cash-v"), moraleV: $("morale-v"), repB: $("rep-b"), cashB: $("cash-b"), moraleB: $("morale-b"),
       repVoice: $("rep-voice"), cashVoice: $("cash-voice"), moraleVoice: $("morale-voice"),
       title: $("title"), desc: $("desc"), carry: $("carry"), choices: $("choices"), feed: $("feed"),
@@ -332,6 +383,14 @@
       d.textContent = `${fmtClock()} — ${text}`;
       refs.feed.prepend(d);
       while (refs.feed.children.length > 14) refs.feed.removeChild(refs.feed.lastChild);
+    }
+    function pushInterrupt(text) {
+      const host = $("interrupts");
+      const node = document.createElement("div");
+      node.className = "interrupt";
+      node.textContent = text;
+      host.appendChild(node);
+      setTimeout(() => node.remove(), 3900);
     }
 
     function applyEffects(effects, source = "") {
@@ -357,7 +416,9 @@
       let total = state.clockHour + hours;
       while (total >= 24) { total -= 24; state.day += 1; }
       state.clockHour = total;
+      state.runwayHours = Math.max(0, state.runwayHours - hours);
       refs.clock.textContent = fmtClock();
+      refs.runway.textContent = `${state.runwayHours}h left`;
     }
 
     function statusLabel() {
@@ -394,15 +455,38 @@
 
     function startEventStream() {
       clearInterval(state.eventTimer);
+      clearTimeout(state.burstTimer);
       state.eventTimer = setInterval(randomEventTick, 4300);
+      const burstTick = () => {
+        if (!state.pending || state.gameOver) return;
+        if (Math.random() < 0.5) {
+          const b = urgentBursts[Math.floor(Math.random() * urgentBursts.length)];
+          applyEffects(b.effects, b.t);
+          addFeed(`Interrupt: ${b.t}`, "urgent");
+          pushInterrupt(b.t);
+          renderMetrics();
+          collapseCheck();
+        }
+        state.burstTimer = setTimeout(burstTick, 2600 + Math.floor(Math.random() * 4200));
+      };
+      state.burstTimer = setTimeout(burstTick, 2200 + Math.floor(Math.random() * 3600));
     }
 
     function stopTimers() {
       clearInterval(state.timer);
       clearInterval(state.eventTimer);
+      clearTimeout(state.burstTimer);
     }
 
     function collapseCheck() {
+      if (state.runwayHours <= 0) {
+        state.gameOver = true;
+        state.result = "loss";
+        state.turning.push("You ran out of operational runway time before stabilization.");
+        stopTimers();
+        finish();
+        return true;
+      }
       for (const [m,v] of Object.entries(state.metrics)) {
         if (v <= 0) {
           state.gameOver = true;
@@ -420,8 +504,11 @@
       const type = state.chosenType;
       const preferred = baseScenarios.filter(s => s.tags.includes(type));
       const others = baseScenarios.filter(s => !s.tags.includes(type));
-      const chosen = [...shuffle(preferred).slice(0,5), ...shuffle(others).slice(0,2)];
-      return shuffle(chosen).slice(0, TOTAL_ROUNDS);
+      const urgent = shuffle(preferred.filter(s => s.urgency >= 6)).slice(0, 2);
+      const strategic = shuffle(preferred.filter(s => s.urgency <= 4)).slice(0, 2);
+      const mixed = shuffle(preferred.filter(s => !urgent.includes(s) && !strategic.includes(s))).slice(0, 2);
+      const wildcard = shuffle(others).slice(0, 1);
+      return shuffle([...urgent, ...strategic, ...mixed, ...wildcard]).slice(0, TOTAL_ROUNDS);
     }
 
     function applyDelayed() {
@@ -475,7 +562,7 @@
       state.activeScenario = state.pool[state.round - 1];
       const s = state.activeScenario;
       refs.title.textContent = s.title;
-      refs.desc.textContent = s.description;
+      refs.desc.textContent = `${s.description} ${startupTypes[state.chosenType].name} pressure context: ${startupTypes[state.chosenType].flavor}`;
       refs.choices.innerHTML = "";
 
       s.choices.forEach((c, i) => {
@@ -585,6 +672,7 @@
       state.turning = [];
       state.clockHour = 9;
       state.day = 1;
+      state.runwayHours = 72;
       state.pending = false;
       state.gameOver = false;
       state.result = "";
@@ -592,6 +680,7 @@
       refs.carry.classList.add("hidden");
       refs.timerPill.classList.remove("low");
       refs.clock.textContent = fmtClock();
+      refs.runway.textContent = `${state.runwayHours}h left`;
       state.pool = selectPool();
     }
 
