@@ -6,262 +6,415 @@
   <title>Boardroom Crisis: Founder Meeting Simulator</title>
   <style>
     :root {
-      --bg: #1d1f22;
-      --wood: #5e4632;
-      --table: #6f5239;
-      --panel: #151b24;
-      --line: #3b4a60;
+      --bg-1: #1a1e26;
+      --bg-2: #0f131b;
+      --panel: rgba(15, 22, 34, 0.88);
+      --panel-border: #364c6d;
       --text: #edf3ff;
-      --muted: #9db0cc;
-      --accent: #6ea8ff;
-      --danger: #ff6e7d;
-      --warn: #ffbe63;
-      --ok: #75d69b;
+      --muted: #a8bad4;
+      --accent: #79b2ff;
+      --danger: #ff7080;
+      --warn: #ffc36b;
+      --ok: #79d9a0;
+      --table: #6f4e36;
+      --table-edge: #8a6346;
+      --shadow: 0 14px 28px rgba(0, 0, 0, 0.35);
     }
 
     * { box-sizing: border-box; }
     body {
       margin: 0;
+      min-height: 100vh;
       font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
       color: var(--text);
-      background: radial-gradient(circle at 20% 0%, #44546a 0%, #20252e 42%, #15181d 100%);
-      min-height: 100vh;
+      background: radial-gradient(circle at 20% 0%, #3f516a 0%, var(--bg-1) 35%, var(--bg-2) 100%);
+    }
+
+    h1, h2, h3, p { margin: 0; }
+    button, input { font: inherit; }
+
+    .app {
+      width: min(1250px, 96vw);
+      margin: 1rem auto 1.5rem;
+      display: grid;
+      gap: 0.8rem;
     }
 
     .screen { display: none; }
     .screen.active { display: grid; }
 
-    .meeting-room {
-      width: min(1200px, 96vw);
-      margin: 1rem auto;
-      grid-template-rows: auto auto 1fr auto;
-      gap: .7rem;
+    .panel {
+      background: linear-gradient(180deg, rgba(18, 25, 38, 0.95), rgba(11, 16, 25, 0.95));
+      border: 1px solid var(--panel-border);
+      border-radius: 12px;
+      padding: 0.8rem 0.95rem;
+      box-shadow: var(--shadow);
+    }
+
+    .eyebrow {
+      color: #89a6cc;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      font-size: 0.73rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .subtitle { color: var(--muted); line-height: 1.45; }
+
+    .btn {
+      border: 1px solid #5576a6;
+      border-radius: 10px;
+      background: #16253a;
+      color: #eff5ff;
+      padding: 0.62rem 0.82rem;
+      cursor: pointer;
+      font-weight: 650;
+    }
+    .btn:hover { filter: brightness(1.1); }
+    .btn.primary {
+      background: linear-gradient(180deg, #79b2ff, #5188df);
+      border-color: #95c2ff;
+    }
+
+    .menu-screen {
+      width: min(980px, 96vw);
+      margin: 3rem auto;
+      gap: 0.9rem;
+    }
+
+    .company-grid {
+      display: grid;
+      gap: 0.7rem;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+
+    .company-card {
+      text-align: left;
+      border: 1px solid #456186;
+      border-radius: 12px;
+      background: linear-gradient(180deg, #16263d, #111b2d);
+      color: var(--text);
+      padding: 0.85rem;
+      cursor: pointer;
+      display: grid;
+      gap: 0.35rem;
+      min-height: 180px;
+    }
+    .company-card:hover { border-color: #8ab7f0; }
+    .company-card strong { font-size: 1.03rem; }
+    .company-card small { color: #b8cbe6; line-height: 1.35; }
+
+    .meeting-screen {
+      gap: 0.72rem;
+      grid-template-rows: auto auto auto;
     }
 
     .topbar {
       display: grid;
-      grid-template-columns: 1.1fr 1fr auto;
-      gap: .6rem;
+      gap: 0.62rem;
+      grid-template-columns: minmax(240px, 1.2fr) minmax(290px, 1fr) minmax(220px, 0.9fr);
     }
 
-    .panel {
-      background: linear-gradient(180deg, rgba(14,18,24,.92), rgba(11,14,19,.95));
-      border: 1px solid #314055;
-      border-radius: 12px;
-      padding: .7rem .85rem;
-      box-shadow: 0 10px 24px rgba(0,0,0,.3);
+    .hud {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(80px, 1fr));
+      gap: 0.45rem;
     }
 
-    .eyebrow { color: #8ca7cd; text-transform: uppercase; letter-spacing: .08em; font-size: .74rem; margin: 0 0 .2rem; }
-    .subtitle { color: var(--muted); margin: 0; line-height: 1.45; }
-    h1,h2,h3,p { margin: 0; }
-
-    .hud { display: grid; grid-template-columns: repeat(3,1fr); gap: .45rem; }
-    .metric { border: 1px solid #36455b; border-radius: 10px; background: #121a25; padding: .45rem .55rem; }
-    .metric span { color: #9fb3d1; font-size: .82rem; }
-    .meter { height: 8px; margin-top: .25rem; border-radius: 999px; background: #0a0f16; overflow: hidden; }
-    .fill { height: 100%; transition: width .25s ease; }
-    .rep { background: linear-gradient(90deg, #4798ff, #79bcff); }
-    .cash { background: linear-gradient(90deg, #54b86f, #7bd995); }
-    .morale { background: linear-gradient(90deg, #d48e45, #ffcb7e); }
-
-    .btn {
-      border: 1px solid #4d6588;
+    .metric {
+      border: 1px solid #3a516f;
       border-radius: 10px;
-      color: #eff5ff;
-      background: #172232;
-      padding: .65rem .8rem;
-      font: inherit;
-      font-weight: 650;
-      cursor: pointer;
+      background: #121a27;
+      padding: 0.42rem 0.5rem;
+      min-width: 0;
     }
-    .btn:hover { filter: brightness(1.08); }
-    .btn.primary { background: linear-gradient(180deg, #6fa8ff, #4e82db); border-color: #80b3ff; }
+    .metric span { color: #9eb4d5; font-size: 0.82rem; }
+    .meter {
+      margin-top: 0.27rem;
+      background: #0a1018;
+      border-radius: 999px;
+      overflow: hidden;
+      height: 8px;
+    }
+    .fill { height: 100%; transition: width 0.24s ease; }
+    .rep { background: linear-gradient(90deg, #4b9aff, #8dc4ff); }
+    .cash { background: linear-gradient(90deg, #59be77, #7de09d); }
+    .morale { background: linear-gradient(90deg, #d99847, #ffd58a); }
 
     .boardroom {
       position: relative;
-      overflow: hidden;
+      border: 1px solid #3b4f6c;
       border-radius: 14px;
-      border: 1px solid #3a495f;
       background:
-        linear-gradient(180deg, rgba(0,0,0,.26), rgba(0,0,0,.65)),
-        linear-gradient(180deg, #5c636d 0%, #4d5661 16%, #3a414a 28%, #2b3038 44%, #1c2128 56%, #181d23 100%);
-      min-height: 540px;
+        linear-gradient(180deg, rgba(0, 0, 0, 0.23), rgba(0, 0, 0, 0.68)),
+        linear-gradient(180deg, #5e6670 0%, #47505a 20%, #2f3640 45%, #1c232d 100%);
+      min-height: 650px;
+      overflow: hidden;
+      padding: 0.9rem;
       display: grid;
-      grid-template-rows: 1fr auto;
+      grid-template-rows: auto 1fr auto;
+      gap: 0.7rem;
     }
-
-    .ceiling { position: absolute; inset: 0 0 auto 0; height: 22%; background: repeating-linear-gradient(90deg, rgba(120,95,70,.55) 0 20px, rgba(50,50,52,.25) 20px 34px); opacity: .35; }
-    .window-strip { position: absolute; left: 0; top: 21%; width: 17%; bottom: 16%; background: linear-gradient(180deg, rgba(193,219,241,.42), rgba(154,181,204,.18)); border-right: 1px solid rgba(180,205,225,.4); }
-    .glass-wall { position: absolute; right: 0; top: 24%; width: 18%; bottom: 16%; background: linear-gradient(180deg, rgba(187,205,220,.16), rgba(123,148,173,.06)); border-left: 1px solid rgba(170,190,214,.22); }
 
     .wall-screen {
-      position: absolute;
-      left: 50%;
-      top: 12%;
-      transform: translateX(-50%);
-      width: min(54%, 700px);
-      border: 6px solid #2a2e35;
+      margin: 0 auto;
+      width: min(860px, 100%);
+      border: 6px solid #2a313a;
       border-radius: 10px;
-      background: #09111d;
-      box-shadow: 0 10px 20px rgba(0,0,0,.45);
-      padding: .55rem;
+      background: #09111c;
+      box-shadow: 0 10px 22px rgba(0, 0, 0, 0.45);
+      padding: 0.55rem;
+      position: relative;
       z-index: 2;
     }
-    .screen-head { display:flex; justify-content:space-between; color:#9ec2ff; font-size:.78rem; margin-bottom:.35rem; }
-    .headline { font-size: 1.02rem; font-weight: 700; line-height: 1.3; color: #eff6ff; min-height: 2.6em; }
-    .ticker { margin-top: .35rem; padding: .3rem .4rem; background: #1c2634; border-radius: 7px; font-size: .82rem; color: #a8bdd8; }
+    .screen-head {
+      display: flex;
+      justify-content: space-between;
+      color: #9ec3ff;
+      font-size: 0.78rem;
+      gap: 0.45rem;
+      flex-wrap: wrap;
+      margin-bottom: 0.35rem;
+    }
+    .headline {
+      font-size: 1.02rem;
+      line-height: 1.34;
+      min-height: 2.8em;
+      font-weight: 700;
+    }
+    .ticker {
+      margin-top: 0.35rem;
+      border-radius: 8px;
+      background: #1a2638;
+      color: #adbfda;
+      padding: 0.32rem 0.42rem;
+      font-size: 0.83rem;
+      min-height: 2.6em;
+      display: flex;
+      align-items: center;
+    }
+
+    .table-zone {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      align-items: center;
+      padding: 0.3rem 0.45rem;
+      min-height: 0;
+    }
 
     .table {
       position: absolute;
       left: 50%;
-      bottom: 10%;
-      transform: translateX(-50%);
-      width: min(88%, 1020px);
-      height: 42%;
-      background: linear-gradient(180deg, #856244, #65482f 56%, #4d3725 100%);
-      border-radius: 18px;
-      border: 1px solid #8e6b4d;
-      box-shadow: 0 20px 30px rgba(0,0,0,.42);
-      z-index: 1;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: min(1000px, 95%);
+      height: min(330px, 70%);
+      border-radius: 170px;
+      background: linear-gradient(180deg, #8a6648, var(--table) 56%, #4e3725 100%);
+      border: 1px solid var(--table-edge);
+      box-shadow: 0 18px 30px rgba(0, 0, 0, 0.42);
     }
     .table::after {
       content: "";
       position: absolute;
-      inset: 14% 5%;
-      border-radius: 12px;
-      border: 1px solid rgba(255,255,255,.12);
-      pointer-events: none;
+      inset: 10% 5%;
+      border-radius: 160px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
     }
 
     .participants {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      z-index: 3;
+      position: relative;
+      z-index: 2;
+      display: grid;
+      gap: 0.55rem;
+      grid-template-columns: repeat(3, minmax(180px, 1fr));
+      width: min(1050px, 100%);
+      margin: 0 auto;
+      align-self: center;
     }
 
     .person {
-      position: absolute;
-      width: 170px;
-      padding: .45rem .5rem;
-      border-radius: 12px;
-      border: 1px solid #4c5f7f;
-      background: linear-gradient(180deg, rgba(21,31,45,.93), rgba(12,17,25,.95));
-      box-shadow: 0 8px 16px rgba(0,0,0,.35);
-      transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
+      border-radius: 11px;
+      border: 1px solid #4c5f80;
+      background: linear-gradient(180deg, rgba(21, 31, 46, 0.94), rgba(12, 18, 28, 0.95));
+      padding: 0.47rem 0.54rem;
+      min-height: 96px;
+      display: grid;
+      align-content: start;
+      gap: 0.13rem;
+      transition: transform 0.2s ease, border-color 0.2s ease;
     }
-
-    .person .name { font-size: .92rem; font-weight: 700; }
-    .person .role { color: #9cb2cf; font-size: .74rem; }
-    .person .mood { margin-top: .3rem; color: #d8e6ff; font-size: .79rem; line-height: 1.3; }
-
+    .person .name { font-size: 0.91rem; font-weight: 700; }
+    .person .role { font-size: 0.74rem; color: #9bb1cf; }
+    .person .mood { font-size: 0.79rem; color: #dbe7fb; line-height: 1.35; margin-top: 0.2rem; }
     .person.active {
       border-color: #8ec0ff;
-      transform: translateY(-4px) scale(1.02);
-      box-shadow: 0 0 0 1px rgba(161,204,255,.35), 0 10px 18px rgba(0,0,0,.45);
+      transform: translateY(-3px) scale(1.01);
+      box-shadow: 0 0 0 1px rgba(161, 204, 255, 0.28);
     }
-
-    .seat-1 { left: 20%; top: 45%; }
-    .seat-2 { left: 36%; top: 43%; }
-    .seat-3 { left: 52%; top: 43%; }
-    .seat-4 { left: 68%; top: 45%; }
-    .seat-5 { left: 78%; top: 56%; }
-    .seat-6 { left: 8%; top: 56%; }
 
     .dialogue {
       position: relative;
-      z-index: 4;
-      margin: auto .8rem .8rem;
+      z-index: 3;
       display: grid;
-      gap: .55rem;
-      grid-template-columns: 1.4fr .9fr;
+      gap: 0.55rem;
+      grid-template-columns: minmax(260px, 1.45fr) minmax(250px, 1fr);
+      align-items: stretch;
+      margin-top: auto;
     }
 
-    .speech { border: 1px solid #44608a; border-radius: 12px; background: rgba(10,15,23,.86); padding: .7rem .8rem; min-height: 126px; }
+    .speech {
+      border: 1px solid #44608a;
+      border-radius: 12px;
+      background: rgba(10, 15, 24, 0.88);
+      padding: 0.72rem 0.82rem;
+      min-height: 158px;
+    }
     .speech strong { color: #a8c8ff; }
-    .speech .line { margin-top: .4rem; font-size: 1rem; line-height: 1.45; }
-    .reaction { margin-top: .4rem; color: #bcd0eb; font-size: .9rem; }
+    .speech .line { margin-top: 0.42rem; line-height: 1.48; }
+    .speech .reaction { margin-top: 0.45rem; color: #c2d5ef; line-height: 1.4; }
 
-    .feed { border: 1px solid #3d536d; border-radius: 12px; background: rgba(9,13,20,.85); padding: .55rem; max-height: 170px; overflow: auto; }
-    .feed-item { border-left: 3px solid #5d7699; padding: .3rem .45rem; margin-bottom: .35rem; background: #121926; border-radius: 8px; color: #d6e4f7; font-size: .83rem; }
+    .feed {
+      border: 1px solid #3d536d;
+      border-radius: 12px;
+      background: rgba(9, 13, 21, 0.88);
+      padding: 0.56rem;
+      max-height: 200px;
+      overflow: auto;
+    }
+    .feed-item {
+      border-left: 3px solid #5d7699;
+      background: #121a29;
+      border-radius: 8px;
+      padding: 0.32rem 0.45rem;
+      margin-bottom: 0.35rem;
+      color: #d6e4f7;
+      font-size: 0.83rem;
+      line-height: 1.35;
+    }
     .feed-item.alert { border-left-color: var(--danger); }
 
     .choices {
-      width: min(1200px, 96vw);
-      margin: 0 auto .8rem;
       display: grid;
-      gap: .5rem;
+      gap: 0.5rem;
       grid-template-columns: 1fr;
     }
 
     .choice {
       text-align: left;
-      border: 1px solid #516a8f;
+      border: 1px solid #50698f;
       border-radius: 10px;
-      background: linear-gradient(180deg, #152337, #111b2b);
-      color: #eef4ff;
-      padding: .72rem .85rem;
-      font: inherit;
+      background: linear-gradient(180deg, #152337, #101b2b);
+      color: #eff4ff;
+      padding: 0.75rem 0.86rem;
       cursor: pointer;
+      line-height: 1.36;
     }
     .choice:hover { border-color: #8cb6ee; }
-    .choice small { color: #a7bad6; display: block; margin-top: .2rem; }
+    .choice small { color: #a7bdd9; display: block; margin-top: 0.22rem; }
 
-    .impact {
-      width: min(900px, 94vw);
-      margin: 2.2rem auto;
-      gap: .7rem;
+    .impact-screen,
+    .final-screen {
+      width: min(930px, 95vw);
+      margin: 2rem auto;
+      gap: 0.72rem;
     }
 
-    .impact-card { background: linear-gradient(180deg, #111a29, #0d131f); border: 1px solid #425470; border-radius: 12px; padding: .95rem 1rem; }
-    .impact-list { margin: .55rem 0 0; padding-left: 1rem; color: #dbe7ff; line-height: 1.45; }
+    .impact-list {
+      margin: 0.6rem 0 0;
+      padding-left: 1rem;
+      line-height: 1.45;
+      color: #deebff;
+    }
 
-    .final { width: min(900px, 94vw); margin: 2rem auto; gap: .7rem; }
+    .tag {
+      display: inline-block;
+      padding: 0.15rem 0.45rem;
+      border-radius: 999px;
+      font-size: 0.74rem;
+      border: 1px solid #4d668a;
+      color: #bad0ee;
+      background: #132033;
+    }
 
-    @media (max-width: 980px) {
-      .topbar, .dialogue { grid-template-columns: 1fr; }
-      .boardroom { min-height: 650px; }
-      .person { width: 145px; }
-      .seat-1 { left: 16%; top: 48%; }
-      .seat-2 { left: 34%; top: 45%; }
-      .seat-3 { left: 50%; top: 45%; }
-      .seat-4 { left: 66%; top: 48%; }
-      .seat-5 { left: 72%; top: 62%; }
-      .seat-6 { left: 10%; top: 62%; }
+    @media (max-width: 1080px) {
+      .topbar { grid-template-columns: 1fr; }
+      .boardroom { min-height: 760px; }
+      .participants { grid-template-columns: repeat(2, minmax(160px, 1fr)); }
+      .dialogue { grid-template-columns: 1fr; }
+      .table { width: 97%; height: min(330px, 58%); }
+    }
+
+    @media (max-width: 640px) {
+      .boardroom { min-height: 820px; }
+      .participants { grid-template-columns: 1fr; }
+      .table { height: min(260px, 38%); top: 42%; }
+      .headline { min-height: 3.8em; }
     }
   </style>
 </head>
 <body>
-  <section id="meeting" class="screen active meeting-room">
+  <section id="menu" class="screen active menu-screen">
+    <article class="panel">
+      <p class="eyebrow">Main menu</p>
+      <h1>Boardroom Crisis — Founder Session</h1>
+      <p class="subtitle" style="margin-top:0.45rem;">
+        Choose your company type. Each one has unique crisis themes, speaker tone, and consequence patterns.
+        Runs are intentionally punishing: collapse can happen as early as round 2.
+      </p>
+    </article>
+    <article class="panel">
+      <p class="eyebrow">Select company profile</p>
+      <div class="company-grid">
+        <button class="company-card" data-company="sustainable">
+          <strong>Sustainable Company</strong>
+          <small>Impact-first firm with field ops and supply exposure. Moral stakes and public trust can collapse fast.</small>
+          <span class="tag">Public trust pressure</span>
+        </button>
+        <button class="company-card" data-company="tech">
+          <strong>Tech Company</strong>
+          <small>Software startup in volatile markets. Investor mood, outages, cyber risk, and AI failures create chain reactions.</small>
+          <span class="tag">Financial volatility</span>
+        </button>
+        <button class="company-card" data-company="consultancy">
+          <strong>Consultancy Company</strong>
+          <small>Client-driven advisory business where relationships and delivery credibility are survival-critical.</small>
+          <span class="tag">Reputation contracts</span>
+        </button>
+      </div>
+    </article>
+  </section>
+
+  <main id="meeting" class="screen app meeting-screen">
     <header class="topbar">
       <article class="panel">
         <p class="eyebrow">Crisis meeting room</p>
-        <h1>Founder Seat — Live Boardroom Session</h1>
-        <p id="roundLabel" class="subtitle">Round 1</p>
+        <h2 id="companyLabel">Company: —</h2>
+        <p id="roundLabel" class="subtitle" style="margin-top:0.3rem;">Round 1</p>
       </article>
       <article class="panel hud">
-        <div class="metric"><span>Reputation <strong id="repVal">65</strong></span><div class="meter"><div id="repBar" class="fill rep"></div></div></div>
-        <div class="metric"><span>Cash <strong id="cashVal">65</strong></span><div class="meter"><div id="cashBar" class="fill cash"></div></div></div>
-        <div class="metric"><span>Morale <strong id="moraleVal">65</strong></span><div class="meter"><div id="moraleBar" class="fill morale"></div></div></div>
+        <div class="metric"><span>Reputation <strong id="repVal">62</strong></span><div class="meter"><div id="repBar" class="fill rep"></div></div></div>
+        <div class="metric"><span>Cash <strong id="cashVal">62</strong></span><div class="meter"><div id="cashBar" class="fill cash"></div></div></div>
+        <div class="metric"><span>Morale <strong id="moraleVal">62</strong></span><div class="meter"><div id="moraleBar" class="fill morale"></div></div></div>
       </article>
-      <article class="panel" style="display:grid;gap:.5rem;align-content:start;">
+      <article class="panel" style="display:grid;gap:0.5rem;align-content:start;">
         <button id="soundBtn" class="btn">🔈 Sound: Off</button>
-        <button id="restartBtn" class="btn">Restart Meeting</button>
+        <button id="restartBtn" class="btn">Back to Main Menu</button>
       </article>
     </header>
 
     <section class="boardroom">
-      <div class="ceiling"></div>
-      <div class="window-strip"></div>
-      <div class="glass-wall"></div>
       <div class="wall-screen">
         <div class="screen-head"><span>Boardroom Display</span><span id="clock">09:00</span></div>
         <div id="headline" class="headline">The team settles into the room as the crisis session begins.</div>
-        <div id="ticker" class="ticker">Live: Investor sentiment stable • Support volume normal</div>
+        <div id="ticker" class="ticker">Live update feed initializing…</div>
       </div>
-      <div class="table"></div>
-      <div id="participants" class="participants"></div>
+
+      <div class="table-zone">
+        <div class="table"></div>
+        <div id="participants" class="participants"></div>
+      </div>
 
       <div class="dialogue">
         <article class="speech">
@@ -278,103 +431,358 @@
     </section>
 
     <section id="choices" class="choices"></section>
-  </section>
+  </main>
 
-  <section id="impact" class="screen impact">
-    <article class="impact-card">
-      <p class="eyebrow">Post-decision reflection</p>
+  <section id="impact" class="screen impact-screen">
+    <article class="panel">
+      <p class="eyebrow">Post-decision consequence screen</p>
       <h2 id="impactTitle"></h2>
-      <p id="impactNarrative" class="subtitle" style="margin-top:.45rem;"></p>
+      <p id="impactNarrative" class="subtitle" style="margin-top:0.45rem;"></p>
       <ul id="impactList" class="impact-list"></ul>
     </article>
-    <article class="impact-card">
+    <article class="panel">
       <h3>Room reaction before the next round</h3>
-      <p id="impactRoom" class="subtitle" style="margin-top:.35rem;"></p>
-      <button id="backToMeeting" class="btn primary" style="margin-top:.7rem;">Return to the table</button>
+      <p id="impactRoom" class="subtitle" style="margin-top:0.4rem;"></p>
+      <button id="backToMeeting" class="btn primary" style="margin-top:0.75rem;">Return to the table</button>
     </article>
   </section>
 
-  <section id="final" class="screen final">
-    <article class="impact-card">
+  <section id="final" class="screen final-screen">
+    <article class="panel">
       <p class="eyebrow">Meeting adjourned</p>
       <h2 id="finalTitle">Session complete</h2>
-      <p id="finalText" class="subtitle" style="margin-top:.4rem;"></p>
-      <p id="finalScores" class="subtitle" style="margin-top:.45rem;"></p>
-      <button id="playAgain" class="btn primary" style="margin-top:.7rem;">Run another crisis session</button>
+      <p id="finalText" class="subtitle" style="margin-top:0.45rem;"></p>
+      <p id="finalScores" class="subtitle" style="margin-top:0.45rem;"></p>
+      <button id="playAgain" class="btn primary" style="margin-top:0.8rem;">Back to Main Menu</button>
     </article>
   </section>
 
   <script>
     const participants = [
-      { id: "cfo", name: "Maya Chen", role: "CFO", seat: "seat-1" },
-      { id: "cto", name: "Arjun Rao", role: "CTO", seat: "seat-2" },
-      { id: "hr", name: "Elena Brooks", role: "HR Lead", seat: "seat-3" },
-      { id: "pr", name: "Nadia Ortiz", role: "PR / Comms", seat: "seat-4" },
-      { id: "legal", name: "Victor Hale", role: "Legal / Strategy", seat: "seat-5" },
-      { id: "board", name: "Renee Park", role: "Board Rep", seat: "seat-6" }
+      { id: "cfo", name: "Maya Chen", role: "CFO" },
+      { id: "cto", name: "Arjun Rao", role: "CTO" },
+      { id: "hr", name: "Elena Brooks", role: "HR Lead" },
+      { id: "pr", name: "Nadia Ortiz", role: "PR / Comms" },
+      { id: "legal", name: "Victor Hale", role: "Legal / Strategy" },
+      { id: "board", name: "Renee Park", role: "Board Rep" }
     ];
 
-    const rounds = [
-      {
-        speaker: "cto",
-        interrupt: "cfo",
-        headline: "Breaking: Core service latency spikes across enterprise clients",
-        ticker: "Incident bridge open • 4 strategic accounts blocked • Social chatter rising",
-        speech: "We're in live incident mode. If we patch fast, we risk introducing data inconsistencies. If we slow down, clients remain locked out.",
-        interruptLine: "Every minute down costs us high-value contracts.",
-        options: [
-          { text: "Get engineering on the outage now. I'll call our top clients personally.", tone: "Fast and visible ownership", delta: { reputation: 4, cash: -6, morale: 2 }, impact: "Clients appreciate direct founder outreach, but overtime costs kick in." },
-          { text: "No public statement yet. I want root-cause certainty before we speak.", tone: "Controlled but opaque", delta: { reputation: -5, cash: -2, morale: -1 }, impact: "Silence buys focus but creates trust erosion outside the room." },
-          { text: "Freeze non-critical features and isolate the failure path right now.", tone: "Disciplined containment", delta: { reputation: 2, cash: -3, morale: 3 }, impact: "Contained recovery keeps confidence steady and avoids a wider collapse." }
+    const companyConfigs = {
+      sustainable: {
+        label: "Sustainable Company",
+        start: { reputation: 64, cash: 57, morale: 66 },
+        sessionLength: 10,
+        scenarioPool: [
+          {
+            id: "s1",
+            speaker: "legal",
+            interrupt: "pr",
+            headline: "Field Safety Failure: Prototype turbine collapse injures two workers",
+            ticker: "Regulators request timeline • Community leaders demand accountability",
+            speech: "If we pause all field deployments we lose contracts this quarter. If we continue, we look reckless.",
+            interruptLine: "One bad quote now can define us for years.",
+            options: [
+              { text: "Suspend all field operations now and publish an independent safety audit timeline.", tone: "Ethics first", delta: { reputation: 10, cash: -15, morale: 4 }, impact: "Public trust starts recovering, but liquidity stress jumps immediately.", tags: ["cashCrunch"] },
+              { text: "Keep operations live at reduced capacity while investigating internally.", tone: "Damage containment", delta: { reputation: -12, cash: -5, morale: -3 }, impact: "Looks evasive. Community anger and staff anxiety accelerate.", tags: ["trustFragile"] },
+              { text: "Deny systemic failure and frame this as isolated misuse by contractor teams.", tone: "Defensive posture", delta: { reputation: -22, cash: 2, morale: -8 }, impact: "Short-term cost relief, but credibility cracks violently.", tags: ["trustFragile","publicBacklash"] }
+            ]
+          },
+          {
+            id: "s2",
+            speaker: "cfo",
+            interrupt: "board",
+            headline: "Supply Chain Scandal: Key mineral supplier linked to forced labor",
+            ticker: "Procurement freeze recommended • NGOs preparing statement",
+            speech: "Switching suppliers now means missing major deliveries and burning cash we don't have.",
+            interruptLine: "If we keep buying, investors may call this a values fraud.",
+            options: [
+              { text: "Terminate supplier immediately and announce emergency ethical sourcing transition.", tone: "Hard line integrity", delta: { reputation: 14, cash: -18, morale: 5 }, impact: "Moral clarity strengthens trust while cash risk spikes.", tags: ["cashCrunch"] },
+              { text: "Keep supplier for 30 days while we validate alternatives quietly.", tone: "Staged transition", delta: { reputation: -7, cash: -4, morale: -2 }, impact: "Buys time, but appears opportunistic once leaked.", tags: ["publicBacklash"] },
+              { text: "Challenge NGO claims publicly and delay any procurement change.", tone: "Confrontation", delta: { reputation: -18, cash: 4, morale: -6 }, impact: "Internal trust fractures and media scrutiny intensifies.", tags: ["publicBacklash","trustFragile"] }
+            ]
+          },
+          {
+            id: "s3",
+            speaker: "pr",
+            interrupt: "board",
+            headline: "River Contamination Event traced to partner facility near your brand campaign site",
+            ticker: "Local protests growing • Brand hashtag turns hostile",
+            speech: "Even if it was the partner's site, the public sees our logo next to the damage.",
+            interruptLine: "Investors care about narrative velocity, not legal nuance.",
+            options: [
+              { text: "Fund immediate cleanup and open community compensation desk today.", tone: "Visible responsibility", delta: { reputation: 12, cash: -14, morale: 2 }, impact: "You absorb cost but recover moral authority.", tags: ["cashCrunch"] },
+              { text: "Issue neutral statement, wait for full forensic report before spending.", tone: "Evidence-first", delta: { reputation: -10, cash: -2, morale: -2 }, impact: "Delay reads as indifference. Outrage scales quickly.", tags: ["publicBacklash"] },
+              { text: "Distance the company from partner operations and threaten legal action.", tone: "Shield the brand", delta: { reputation: -14, cash: 1, morale: -5 }, impact: "Stakeholders interpret it as blame-shifting.", tags: ["trustFragile"] }
+            ]
+          },
+          {
+            id: "s4",
+            speaker: "hr",
+            interrupt: "legal",
+            headline: "Whistleblower dossier alleges inflated impact metrics in investor materials",
+            ticker: "Employee channels polarized • Press requests executive interview",
+            speech: "People are asking whether leadership bent the truth to keep funding alive.",
+            interruptLine: "If numbers are wrong, exposure could be severe.",
+            options: [
+              { text: "Acknowledge uncertainty, retract disputed claims, and commission external review.", tone: "Transparent reset", delta: { reputation: 8, cash: -8, morale: 6 }, impact: "Painful correction earns internal and external credibility.", tags: ["trustFragile"] },
+              { text: "Describe it as methodology disagreement and continue normal reporting.", tone: "Minimize concern", delta: { reputation: -11, cash: 2, morale: -4 }, impact: "Short-term calm, but trust degrades.", tags: ["publicBacklash"] },
+              { text: "Threaten legal action against whistleblower for reputational damage.", tone: "Aggressive suppression", delta: { reputation: -20, cash: -1, morale: -10 }, impact: "Fear rises; public narrative turns punitive.", tags: ["publicBacklash", "trustFragile"] }
+            ]
+          },
+          {
+            id: "s5",
+            speaker: "cto",
+            interrupt: "cfo",
+            headline: "Battery pack in flagship eco-device ignites during customer demo",
+            ticker: "Video spreading globally • Product recall window shrinking",
+            speech: "A full recall may save trust but could wipe this quarter.",
+            interruptLine: "If injuries escalate, legal liabilities could end us.",
+            options: [
+              { text: "Launch voluntary global recall now and set emergency customer support fund.", tone: "Safety over sales", delta: { reputation: 9, cash: -20, morale: 3 }, impact: "Trust stabilizes while cash burn turns brutal.", tags: ["cashCrunch"] },
+              { text: "Recall only affected batch and avoid broad public alarm.", tone: "Targeted response", delta: { reputation: -6, cash: -6, morale: -1 }, impact: "Moderate savings, but confidence remains shaky.", tags: ["trustFragile"] },
+              { text: "Delay recall and investigate quietly to protect quarter-end numbers.", tone: "Financial defense", delta: { reputation: -24, cash: 5, morale: -7 }, impact: "Revenue holds briefly before a severe backlash wave.", tags: ["publicBacklash"] }
+            ]
+          },
+          {
+            id: "s6",
+            speaker: "board",
+            interrupt: "cfo",
+            headline: "Major foundation suspends partnership citing governance concerns",
+            ticker: "Grant pipeline at risk • Sector peers publicly distancing",
+            speech: "Without this partner, our growth narrative collapses.",
+            interruptLine: "Runway can't absorb another donor freeze.",
+            options: [
+              { text: "Offer board-level governance reforms and transparent quarterly oversight.", tone: "Structural reform", delta: { reputation: 11, cash: -7, morale: 4 }, impact: "Institutional trust starts to recover.", tags: ["trustFragile"] },
+              { text: "Negotiate privately and avoid public governance concessions.", tone: "Quiet diplomacy", delta: { reputation: -5, cash: -2, morale: -2 }, impact: "Ambiguity prolongs skepticism.", tags: ["publicBacklash"] },
+              { text: "Call partner decision politically motivated and move on.", tone: "Defiant", delta: { reputation: -16, cash: 0, morale: -6 }, impact: "Donor confidence contracts sharply.", tags: ["publicBacklash"] }
+            ]
+          }
+        ],
+        shocks: [
+          { text: "Activist network launches boycott campaign overnight.", delta: { reputation: -14, cash: -6, morale: -4 } },
+          { text: "Emergency compliance review finds extra remediation costs.", delta: { reputation: -4, cash: -13, morale: -2 } },
+          { text: "Credible community leader publicly supports your corrective action.", delta: { reputation: 8, cash: -1, morale: 4 } },
+          { text: "Insurance premium update doubles projected risk expense.", delta: { reputation: 0, cash: -12, morale: -3 } }
         ]
       },
-      {
-        speaker: "pr",
-        interrupt: "legal",
-        headline: "Breaking News: Edited clip about company safety standards trends online",
-        ticker: "Journalists requesting comment • Employee group chat active • Competitor amplifying",
-        speech: "That clip is out of context but viral. If we wait, others define us. If we overreact, we validate the narrative.",
-        interruptLine: "Anything public now can be used in future regulatory filings.",
-        options: [
-          { text: "Issue a calm statement now. We acknowledge concern and publish full context in one hour.", tone: "Transparent and measured", delta: { reputation: 4, cash: -2, morale: 2 }, impact: "Owning the timeline slows backlash and gives the team a script." },
-          { text: "Hold statements. I want legal review before any microphone goes live.", tone: "Defensive risk control", delta: { reputation: -4, cash: 0, morale: -2 }, impact: "Lower legal risk now, but public sentiment hardens in the silence." },
-          { text: "Go aggressive: call out misinformation and challenge critics directly.", tone: "Combative", delta: { reputation: -6, cash: -1, morale: 1 }, impact: "Supporters cheer, but neutral observers shift against the company." }
+      tech: {
+        label: "Tech Company",
+        start: { reputation: 62, cash: 64, morale: 61 },
+        sessionLength: 11,
+        scenarioPool: [
+          {
+            id: "t1",
+            speaker: "cto",
+            interrupt: "pr",
+            headline: "Critical server outage blocks enterprise tenants during US trading hours",
+            ticker: "SLA breach timers running • Churn risk surging",
+            speech: "Fast rollback might restore uptime, but data consistency could be corrupted.",
+            interruptLine: "Clients are posting screenshots of downtime in real time.",
+            options: [
+              { text: "Rollback immediately and accept potential data cleanup later.", tone: "Speed over certainty", delta: { reputation: 5, cash: -10, morale: -2 }, impact: "Uptime returns fast; backend teams absorb heavy cleanup.", tags: ["opsDebt"] },
+              { text: "Hold outage longer for clean recovery and full integrity checks.", tone: "Reliability discipline", delta: { reputation: -9, cash: -8, morale: 1 }, impact: "Trust dips now, but systemic risk is contained.", tags: ["investorPanic"] },
+              { text: "Prioritize top-paying clients only and throttle everyone else.", tone: "Revenue triage", delta: { reputation: -15, cash: 4, morale: -5 }, impact: "Short-term revenue saved, broad market trust damaged.", tags: ["publicBacklash"] }
+            ]
+          },
+          {
+            id: "t2",
+            speaker: "cfo",
+            interrupt: "board",
+            headline: "Market crash cuts comparable startup valuations by 45% in one day",
+            ticker: "Bridge terms worsening • Existing investors requesting emergency update",
+            speech: "If we don't show drastic runway protection tonight, financing might freeze.",
+            interruptLine: "The board won't accept optimistic forecasts anymore.",
+            options: [
+              { text: "Immediate hiring freeze, vendor renegotiations, and executive pay cuts.", tone: "Austerity package", delta: { reputation: 3, cash: 14, morale: -7 }, impact: "Runway extends materially while team confidence drops.", tags: ["moraleCrash"] },
+              { text: "Defend growth roadmap and pursue aggressive bridge round.", tone: "High-risk growth bet", delta: { reputation: 1, cash: -13, morale: 2 }, impact: "Momentum narrative survives, survival odds become binary.", tags: ["investorPanic"] },
+              { text: "Cut 25% of staff now to preserve valuation optics.", tone: "Shock restructuring", delta: { reputation: -8, cash: 18, morale: -16 }, impact: "Cash position improves sharply; culture destabilizes.", tags: ["moraleCrash"] }
+            ]
+          },
+          {
+            id: "t3",
+            speaker: "legal",
+            interrupt: "cto",
+            headline: "Data leak exposes sensitive user records from analytics cluster",
+            ticker: "Regulator inquiry expected • Class-action chatter rising",
+            speech: "The breach window might be larger than we thought. Disclosure timing is critical.",
+            interruptLine: "Delay increases forensic certainty but multiplies reputational damage.",
+            options: [
+              { text: "Disclose breach now, rotate credentials, and fund full third-party audit.", tone: "Transparent containment", delta: { reputation: 7, cash: -12, morale: 2 }, impact: "Accountability lowers legal-tail risk.", tags: ["opsDebt"] },
+              { text: "Wait 48 hours for complete scope before notifying users.", tone: "Controlled disclosure", delta: { reputation: -14, cash: -4, morale: -3 }, impact: "Users interpret delay as concealment.", tags: ["publicBacklash"] },
+              { text: "Call it limited metadata exposure to calm market reaction.", tone: "Narrative minimization", delta: { reputation: -20, cash: 2, morale: -6 }, impact: "Investor calm lasts hours before credibility collapse.", tags: ["investorPanic","publicBacklash"] }
+            ]
+          },
+          {
+            id: "t4",
+            speaker: "pr",
+            interrupt: "board",
+            headline: "AI product gives harmful recommendation in viral customer incident",
+            ticker: "Ethics groups mobilizing • Enterprise prospects pausing pilots",
+            speech: "If we pause the model publicly, revenue takes a hit. If we don't, trust implodes.",
+            interruptLine: "The board is worried we have no responsible AI controls.",
+            options: [
+              { text: "Pause affected AI feature and publish corrective guardrail roadmap today.", tone: "Responsible pause", delta: { reputation: 9, cash: -9, morale: 1 }, impact: "Market sees accountability and long-term control.", tags: ["opsDebt"] },
+              { text: "Limit statement to 'rare edge case' and keep product live.", tone: "Defensive continuity", delta: { reputation: -13, cash: -1, morale: -2 }, impact: "Short-term retention improves while criticism intensifies.", tags: ["publicBacklash"] },
+              { text: "Blame customer misuse and threaten legal pushback.", tone: "Aggressive posture", delta: { reputation: -19, cash: 1, morale: -7 }, impact: "Escalation triggers rapid trust erosion.", tags: ["publicBacklash","investorPanic"] }
+            ]
+          },
+          {
+            id: "t5",
+            speaker: "hr",
+            interrupt: "cto",
+            headline: "On-call engineers are burning out after back-to-back incidents",
+            ticker: "Resignation drafts in private channels • Release quality dropping",
+            speech: "If this continues one more sprint, we lose key maintainers.",
+            interruptLine: "Without those leads, uptime risk explodes.",
+            options: [
+              { text: "Freeze feature work and move to reliability sprint with recovery time.", tone: "Stability reset", delta: { reputation: 2, cash: -5, morale: 11 }, impact: "Operational resilience improves, growth slips temporarily.", tags: ["opsDebt"] },
+              { text: "Push two more weeks before relieving load.", tone: "Deadline pressure", delta: { reputation: -2, cash: 3, morale: -12 }, impact: "Short output gains lead to severe fatigue errors.", tags: ["moraleCrash"] },
+              { text: "Outsource incident response to lowest-cost external team.", tone: "Cost-first delegation", delta: { reputation: -6, cash: 6, morale: -7 }, impact: "Internal burnout persists while quality confidence drops.", tags: ["opsDebt"] }
+            ]
+          },
+          {
+            id: "t6",
+            speaker: "board",
+            interrupt: "cfo",
+            headline: "Lead investor hints at pulling term sheet unless metrics improve this month",
+            ticker: "Cap table anxiety rising • Emergency board call requested",
+            speech: "We need a move that signals control, not panic.",
+            interruptLine: "If this round dies, cash risk becomes immediate.",
+            options: [
+              { text: "Present conservative plan and accept lower valuation with stricter governance.", tone: "Survival finance", delta: { reputation: 4, cash: 8, morale: -4 }, impact: "Runway stabilizes with tighter oversight.", tags: ["investorPanic"] },
+              { text: "Reject down-round optics and chase new investors aggressively.", tone: "Optics defense", delta: { reputation: 0, cash: -10, morale: 2 }, impact: "Potential upside exists, but time window shrinks.", tags: ["investorPanic"] },
+              { text: "Promise unrealistic growth targets to secure commitment.", tone: "High-risk signaling", delta: { reputation: -15, cash: 4, morale: -6 }, impact: "Short-term relief creates long-term trust damage.", tags: ["publicBacklash"] }
+            ]
+          }
+        ],
+        shocks: [
+          { text: "Botnet attack overwhelms API edge for 90 minutes.", delta: { reputation: -9, cash: -9, morale: -3 } },
+          { text: "Unexpected cloud bill spike wipes forecasted margin.", delta: { reputation: -2, cash: -14, morale: -2 } },
+          { text: "Analyst note downgrades your resilience narrative.", delta: { reputation: -11, cash: -4, morale: -2 } },
+          { text: "Unexpected competitor outage drives emergency inbound demand.", delta: { reputation: 5, cash: 6, morale: 2 } }
         ]
       },
-      {
-        speaker: "hr",
-        interrupt: "board",
-        headline: "Internal Alert: Burnout risk and attrition warnings from key team leads",
-        ticker: "2 resignations drafted • Product velocity down 18% • Recruiting pipeline fragile",
-        speech: "People are saying they can do one more sprint, but they don't trust we mean it when we promise recovery.",
-        interruptLine: "If execution drops next quarter, the board will question leadership discipline.",
-        options: [
-          { text: "Tell the team the truth before rumors spread. We cut scope and protect weekends immediately.", tone: "People-first reset", delta: { reputation: 1, cash: -4, morale: 7 }, impact: "Morale rebounds and trust climbs, though roadmap slips this month." },
-          { text: "We push through two more weeks, then we'll reset. Everyone must hold the line.", tone: "Short-term pressure", delta: { reputation: -1, cash: 3, morale: -8 }, impact: "Output spikes briefly, then fatigue errors multiply across teams." },
-          { text: "Outsource overflow work and preserve internal energy for critical paths.", tone: "Operational compromise", delta: { reputation: 0, cash: -6, morale: 3 }, impact: "Pressure drops in-house, but handoff quality becomes inconsistent." }
-        ]
-      },
-      {
-        speaker: "cfo",
-        interrupt: "board",
-        headline: "Market Shock: Funding environment tightens after surprise rate move",
-        ticker: "Runway projection down 5 months • Investor check-ins accelerated • Hiring freeze discussed",
-        speech: "Cash burn is now our central threat. We need an immediate posture for investors and spending.",
-        interruptLine: "The board expects a concrete survival plan by end of day.",
-        options: [
-          { text: "Freeze all non-essential spending today. I will present a disciplined runway plan tonight.", tone: "Hard reset", delta: { reputation: 2, cash: 8, morale: -3 }, impact: "Runway extends and investors calm down, but team anxiety rises." },
-          { text: "Protect momentum projects and absorb short-term burn while we pursue bridge funding.", tone: "Growth bet", delta: { reputation: 1, cash: -7, morale: 2 }, impact: "Execution stays strong, but financing risk grows if investors stall." },
-          { text: "Immediate layoffs to preserve runway above all else.", tone: "Severe austerity", delta: { reputation: -4, cash: 10, morale: -10 }, impact: "Cash improves fast, but trust and culture take a major hit." }
+      consultancy: {
+        label: "Consultancy Company",
+        start: { reputation: 66, cash: 60, morale: 63 },
+        sessionLength: 10,
+        scenarioPool: [
+          {
+            id: "c1",
+            speaker: "board",
+            interrupt: "cfo",
+            headline: "Largest client signals intent to terminate after failed steering committee",
+            ticker: "30% revenue exposed • Renewal probability collapsing",
+            speech: "Without this account, we restructure immediately.",
+            interruptLine: "Cash flow impact begins next month if they walk.",
+            options: [
+              { text: "Founder joins client war-room personally and offers recovery discount package.", tone: "Relationship salvage", delta: { reputation: 7, cash: -10, morale: 3 }, impact: "Relationship may recover, margin deteriorates quickly.", tags: ["clientFragile"] },
+              { text: "Hold contractual line and demand formal notice before concessions.", tone: "Contract defense", delta: { reputation: -8, cash: -2, morale: -3 }, impact: "Protects terms, accelerates trust breakdown.", tags: ["contractRisk"] },
+              { text: "Let client leave and reassign team to sales pipeline immediately.", tone: "Hard reset", delta: { reputation: -14, cash: -6, morale: -6 }, impact: "Strategic clarity with severe near-term shock.", tags: ["clientFragile"] }
+            ]
+          },
+          {
+            id: "c2",
+            speaker: "hr",
+            interrupt: "board",
+            headline: "Consulting team reports unsustainable overtime before flagship delivery",
+            ticker: "Quality defect risk up • Sick leave spikes appearing",
+            speech: "People can finish this milestone, but not without a serious human cost.",
+            interruptLine: "A public miss in front of the client would be catastrophic.",
+            options: [
+              { text: "Scale back scope with client and protect team recovery windows now.", tone: "People and quality", delta: { reputation: 2, cash: -5, morale: 10 }, impact: "Delivery confidence improves while billables dip.", tags: ["teamFatigue"] },
+              { text: "Push all teams through final sprint and compensate later.", tone: "Deadline force", delta: { reputation: -4, cash: 4, morale: -12 }, impact: "Temporary output spike, post-delivery collapse risk rises.", tags: ["teamFatigue"] },
+              { text: "Bring in unvetted contractors overnight to absorb workload.", tone: "Capacity patch", delta: { reputation: -7, cash: -3, morale: -5 }, impact: "Immediate relief but quality and cohesion suffer.", tags: ["clientFragile"] }
+            ]
+          },
+          {
+            id: "c3",
+            speaker: "legal",
+            interrupt: "pr",
+            headline: "Confidential strategy deck leaked from your project workspace",
+            ticker: "Client legal team alarmed • Competitor references deck details",
+            speech: "We need to decide whether to disclose full breach chain right now.",
+            interruptLine: "If the client hears details elsewhere first, we lose all trust.",
+            options: [
+              { text: "Call client leadership immediately, disclose scope, and fund forensic investigation.", tone: "Total transparency", delta: { reputation: 8, cash: -9, morale: 2 }, impact: "Accountability may preserve core partnership.", tags: ["contractRisk"] },
+              { text: "Delay disclosure until we identify individual source of leak.", tone: "Internal-first investigation", delta: { reputation: -12, cash: -2, morale: -4 }, impact: "Delay appears deceptive once timeline emerges.", tags: ["clientFragile"] },
+              { text: "Frame leak as minor and deny strategic sensitivity.", tone: "Narrative minimization", delta: { reputation: -18, cash: 1, morale: -7 }, impact: "Short calm period before severe contract trust loss.", tags: ["contractRisk"] }
+            ]
+          },
+          {
+            id: "c4",
+            speaker: "pr",
+            interrupt: "board",
+            headline: "Public workshop fails live in front of major prospect due to internal conflict",
+            ticker: "Prospect postpones decision • Social snippets spreading",
+            speech: "Our senior partners contradicted each other in front of everyone.",
+            interruptLine: "Brand authority is the product. This cannot look normal.",
+            options: [
+              { text: "Admit miss publicly, publish corrected framework, and host free follow-up session.", tone: "Repair trust", delta: { reputation: 9, cash: -6, morale: 1 }, impact: "Credibility returns gradually with cost.", tags: ["clientFragile"] },
+              { text: "Ignore chatter and privately reassure only the biggest prospect.", tone: "Selective containment", delta: { reputation: -7, cash: 0, morale: -2 }, impact: "Narrow damage control misses broader reputation slide.", tags: ["contractRisk"] },
+              { text: "Blame a junior team member for the failed session.", tone: "Scapegoating", delta: { reputation: -16, cash: 1, morale: -11 }, impact: "Culture cracks and clients question leadership maturity.", tags: ["teamFatigue"] }
+            ]
+          },
+          {
+            id: "c5",
+            speaker: "cfo",
+            interrupt: "legal",
+            headline: "Contract dispute escalates: client refuses final milestone payment",
+            ticker: "Revenue recognition blocked • Legal costs climbing",
+            speech: "If we litigate hard we may recover cash, but relationship is gone.",
+            interruptLine: "Settling quickly may signal weakness to other clients.",
+            options: [
+              { text: "Offer mediated settlement and retain strategic relationship at reduced margin.", tone: "Pragmatic recovery", delta: { reputation: 5, cash: -8, morale: 3 }, impact: "Lower short-term cash, less long-tail damage.", tags: ["contractRisk"] },
+              { text: "File aggressive legal claim and freeze all non-required collaboration.", tone: "Hard enforcement", delta: { reputation: -9, cash: -4, morale: -4 }, impact: "Potential upside later, immediate trust loss now.", tags: ["clientFragile"] },
+              { text: "Write off payment quietly and move on to avoid attention.", tone: "Silent retreat", delta: { reputation: -6, cash: -14, morale: -2 }, impact: "Conflict disappears publicly while cash hole deepens.", tags: ["contractRisk"] }
+            ]
+          },
+          {
+            id: "c6",
+            speaker: "cto",
+            interrupt: "hr",
+            headline: "Knowledge silo risk: two senior experts threaten to leave mid-program",
+            ticker: "Delivery quality exposed • Bench not ready",
+            speech: "If they walk, we lose delivery continuity on top accounts.",
+            interruptLine: "Team morale is tied directly to whether leadership listens now.",
+            options: [
+              { text: "Offer retention packages and redistribute ownership across project leads.", tone: "Retention move", delta: { reputation: 3, cash: -7, morale: 8 }, impact: "Institutional stability improves, costs rise.", tags: ["teamFatigue"] },
+              { text: "Decline retention requests and enforce existing terms.", tone: "Policy rigidity", delta: { reputation: -8, cash: 3, morale: -10 }, impact: "Cost relief now, capability risk escalates.", tags: ["clientFragile"] },
+              { text: "Promise future promotions without immediate structural change.", tone: "Deferred reassurance", delta: { reputation: -4, cash: -1, morale: -7 }, impact: "Morale slips as promises feel empty.", tags: ["teamFatigue"] }
+            ]
+          }
+        ],
+        shocks: [
+          { text: "Industry award shortlist drops your firm after controversy.", delta: { reputation: -10, cash: -2, morale: -3 } },
+          { text: "Client procurement suddenly widens payment terms by 45 days.", delta: { reputation: -2, cash: -11, morale: -2 } },
+          { text: "Former client posts unexpectedly positive case-study testimonial.", delta: { reputation: 7, cash: 3, morale: 3 } },
+          { text: "Partner-level dispute leaks into professional networks.", delta: { reputation: -9, cash: -4, morale: -8 } }
         ]
       }
-    ];
+    };
 
-    const state = { reputation: 65, cash: 65, morale: 65, round: 0, soundOn: false, audioReady: false };
+    const state = {
+      companyType: null,
+      rounds: [],
+      currentRoundIndex: 0,
+      reputation: 62,
+      cash: 62,
+      morale: 62,
+      ended: false,
+      pendingDelta: null,
+      pendingNarrative: "",
+      soundOn: false,
+      audioReady: false,
+      tickTimer: null,
+      previousScenarioTags: []
+    };
 
     const el = {
+      menu: document.getElementById("menu"),
       meeting: document.getElementById("meeting"),
       impact: document.getElementById("impact"),
       final: document.getElementById("final"),
+      companyLabel: document.getElementById("companyLabel"),
       roundLabel: document.getElementById("roundLabel"),
       speakerName: document.getElementById("speakerName"),
       speechLine: document.getElementById("speechLine"),
@@ -394,6 +802,7 @@
       impactNarrative: document.getElementById("impactNarrative"),
       impactList: document.getElementById("impactList"),
       impactRoom: document.getElementById("impactRoom"),
+      finalTitle: document.getElementById("finalTitle"),
       finalText: document.getElementById("finalText"),
       finalScores: document.getElementById("finalScores"),
       soundBtn: document.getElementById("soundBtn"),
@@ -401,43 +810,68 @@
     };
 
     let audioCtx;
-    let ambienceGain;
-    let musicGain;
-    let ambientSource;
+    let noiseGain;
+    let droneGain;
+    let noiseSource;
 
     function clamp(v) { return Math.max(0, Math.min(100, v)); }
+    function randomInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+
     function setScreen(id) {
-      [el.meeting, el.impact, el.final].forEach(s => s.classList.remove("active"));
+      [el.menu, el.meeting, el.impact, el.final].forEach(screen => screen.classList.remove("active"));
       id.classList.add("active");
+      if (id === el.meeting) startTicking();
+      else stopTicking();
+    }
+
+    function shuffle(list) {
+      const copy = [...list];
+      for (let i = copy.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function buildRun(companyType) {
+      const cfg = companyConfigs[companyType];
+      const base = shuffle(cfg.scenarioPool);
+      const run = [];
+      while (run.length < cfg.sessionLength) {
+        run.push(base[run.length % base.length]);
+      }
+      return shuffle(run.map((r, idx) => ({ ...r, runId: `${r.id}-${idx}` })));
+    }
+
+    function moodLine(roleId) {
+      if (roleId === "cfo") return state.cash < 35 ? "Cash stress is turning existential." : "Runway is fragile but still maneuverable.";
+      if (roleId === "cto") return state.reputation < 45 ? "Technical trust is close to snapping." : "Execution can hold if priorities stay brutal.";
+      if (roleId === "hr") return state.morale < 40 ? "Team burnout is becoming visible in every room." : "People can push, but only briefly.";
+      if (roleId === "pr") return state.reputation < 38 ? "Public narrative is running against us." : "We can still shape the story with precision.";
+      if (roleId === "legal") return state.reputation < 42 ? "Regulatory exposure is climbing fast." : "Liability is manageable if we stay transparent.";
+      return state.cash < 42 ? "Board patience drops with every cash shock." : "The board expects credible, hard tradeoffs.";
     }
 
     function renderParticipants(activeId) {
       el.participants.innerHTML = "";
       participants.forEach(p => {
         const div = document.createElement("article");
-        div.className = `person ${p.seat} ${p.id === activeId ? "active" : ""}`;
+        div.className = `person ${p.id === activeId ? "active" : ""}`;
         div.innerHTML = `<div class="name">${p.name}</div><div class="role">${p.role}</div><p class="mood">${moodLine(p.id)}</p>`;
         el.participants.appendChild(div);
       });
     }
 
-    function moodLine(roleId) {
-      const { reputation, cash, morale } = state;
-      if (roleId === "cfo") return cash < 45 ? "Cash pressure is becoming existential." : "Runway is stable for now, if we stay disciplined.";
-      if (roleId === "cto") return reputation < 50 ? "Reliability trust is brittle right now." : "Engineering can execute if priorities stay clear.";
-      if (roleId === "hr") return morale < 45 ? "Team confidence is visibly slipping." : "People can stretch, but only with honest leadership.";
-      if (roleId === "pr") return reputation < 45 ? "Public narrative is tilting against us." : "We still have room to shape perception.";
-      if (roleId === "legal") return reputation < 40 ? "Regulatory scrutiny risk is rising." : "Risk remains manageable with careful wording.";
-      return cash < 40 ? "Board patience will shrink if runway drops further." : "The board expects decisive, credible moves.";
-    }
-
     function updateMeters() {
-      ["reputation", "cash", "morale"].forEach(key => {
-        const val = clamp(state[key]);
-        state[key] = val;
-        const cap = key.charAt(0).toUpperCase() + key.slice(1);
-        el[key === "reputation" ? "repVal" : key === "cash" ? "cashVal" : "moraleVal"].textContent = val;
-        el[key === "reputation" ? "repBar" : key === "cash" ? "cashBar" : "moraleBar"].style.width = `${val}%`;
+      const map = [
+        ["reputation", "repVal", "repBar"],
+        ["cash", "cashVal", "cashBar"],
+        ["morale", "moraleVal", "moraleBar"]
+      ];
+      map.forEach(([k, vEl, bEl]) => {
+        state[k] = clamp(state[k]);
+        el[vEl].textContent = state[k];
+        el[bEl].style.width = `${state[k]}%`;
       });
     }
 
@@ -446,15 +880,42 @@
       row.className = `feed-item ${alert ? "alert" : ""}`;
       row.textContent = text;
       el.feed.prepend(row);
-      while (el.feed.children.length > 8) el.feed.removeChild(el.feed.lastChild);
+      while (el.feed.children.length > 10) el.feed.removeChild(el.feed.lastChild);
+    }
+
+    function weightedShockChance(roundIndex) {
+      const stress = (100 - state.reputation + 100 - state.cash + 100 - state.morale) / 3;
+      return Math.min(0.72, 0.25 + (roundIndex * 0.03) + (stress / 220));
+    }
+
+    function maybeExternalShock(roundScenario) {
+      const cfg = companyConfigs[state.companyType];
+      const roll = Math.random();
+      if (roll > weightedShockChance(state.currentRoundIndex)) return null;
+      const shock = cfg.shocks[Math.floor(Math.random() * cfg.shocks.length)];
+      const combo = { ...shock.delta };
+
+      if (roundScenario.options.some(o => o.tags && o.tags.includes("publicBacklash"))) combo.reputation -= randomInt(2, 6);
+      if (roundScenario.options.some(o => o.tags && o.tags.includes("cashCrunch"))) combo.cash -= randomInt(2, 7);
+      if (roundScenario.options.some(o => o.tags && o.tags.includes("moraleCrash"))) combo.morale -= randomInt(2, 6);
+
+      return { text: shock.text, delta: combo };
+    }
+
+    function scenarioByIndex(index) {
+      return state.rounds[index];
     }
 
     function renderRound() {
-      if (state.round >= rounds.length || Object.values({a: state.reputation,b: state.cash,c: state.morale}).some(v => v <= 0)) return endGame();
-      const r = rounds[state.round];
-      el.roundLabel.textContent = `Round ${state.round + 1} / ${rounds.length} — Crisis briefing in progress`;
+      if (state.ended) return;
+      if (state.currentRoundIndex >= state.rounds.length) return endGame(false, "You made it through the scheduled crisis agenda.");
+      if ([state.reputation, state.cash, state.morale].some(v => v <= 0)) return endGame(true, "One pillar hit zero. The company collapsed under compound pressure.");
+
+      const r = scenarioByIndex(state.currentRoundIndex);
       const speaker = participants.find(p => p.id === r.speaker);
       const interrupter = participants.find(p => p.id === r.interrupt);
+
+      el.roundLabel.textContent = `Round ${state.currentRoundIndex + 1} / ${state.rounds.length} — live crisis briefing`;
       el.speakerName.textContent = `${speaker.name} (${speaker.role})`;
       el.speechLine.textContent = `“${r.speech}”`;
       el.reaction.textContent = `${interrupter.name} cuts in: “${r.interruptLine}”`;
@@ -472,57 +933,117 @@
       });
     }
 
+    function applyDelta(base, add) {
+      return {
+        reputation: (base.reputation || 0) + (add.reputation || 0),
+        cash: (base.cash || 0) + (add.cash || 0),
+        morale: (base.morale || 0) + (add.morale || 0)
+      };
+    }
+
     function chooseOption(index) {
-      const r = rounds[state.round];
+      const r = scenarioByIndex(state.currentRoundIndex);
       const opt = r.options[index];
       clickSound();
-      state.reputation += opt.delta.reputation;
-      state.cash += opt.delta.cash;
-      state.morale += opt.delta.morale;
-      updateMeters();
 
-      const outcome = [];
-      if (opt.delta.reputation) outcome.push(`Reputation ${opt.delta.reputation > 0 ? "+" : ""}${opt.delta.reputation}`);
-      if (opt.delta.cash) outcome.push(`Cash ${opt.delta.cash > 0 ? "+" : ""}${opt.delta.cash}`);
-      if (opt.delta.morale) outcome.push(`Morale ${opt.delta.morale > 0 ? "+" : ""}${opt.delta.morale}`);
+      let delta = { ...opt.delta };
+      if (state.previousScenarioTags.includes("trustFragile") && delta.reputation < 0) delta.reputation -= randomInt(2, 5);
+      if (state.previousScenarioTags.includes("cashCrunch") && delta.cash < 0) delta.cash -= randomInt(2, 6);
+      if (state.previousScenarioTags.includes("teamFatigue") && delta.morale < 0) delta.morale -= randomInt(2, 5);
 
-      el.impactTitle.textContent = `Decision ${state.round + 1}: Founder response delivered`;
-      el.impactNarrative.textContent = opt.impact;
-      el.impactList.innerHTML = outcome.map(o => `<li>${o}</li>`).join("");
-      el.impactRoom.textContent = `${participants.find(p => p.id === r.speaker).name} nods, while ${participants.find(p => p.id === r.interrupt).name} watches the wall display for secondary fallout.`;
+      const shock = maybeExternalShock(r);
+      if (shock) {
+        delta = applyDelta(delta, shock.delta);
+        addFeed(`External shock: ${shock.text}`, true);
+        alarmSound(980, 0.045);
+      }
+
+      state.pendingDelta = delta;
+      state.pendingNarrative = opt.impact;
+      state.previousScenarioTags = opt.tags || [];
+
+      const outcomes = [];
+      ["reputation", "cash", "morale"].forEach(k => {
+        if ((delta[k] || 0) !== 0) outcomes.push(`${k[0].toUpperCase() + k.slice(1)} ${delta[k] > 0 ? "+" : ""}${delta[k]}`);
+      });
+      if (shock) outcomes.push(`External shock: ${shock.text}`);
+
+      const speaker = participants.find(p => p.id === r.speaker);
+      const interrupter = participants.find(p => p.id === r.interrupt);
+      el.impactTitle.textContent = `Decision ${state.currentRoundIndex + 1}: ${companyConfigs[state.companyType].label} under pressure`;
+      el.impactNarrative.textContent = state.pendingNarrative;
+      el.impactList.innerHTML = outcomes.map(item => `<li>${item}</li>`).join("");
+      el.impactRoom.textContent = `${speaker.name} waits for your final call to settle in. ${interrupter.name} studies the display for second-order fallout.`;
       addFeed(`Decision logged: ${opt.text}`, true);
       newsTone();
       setScreen(el.impact);
     }
 
-    function endGame() {
+    function finalizeDecisionAndAdvance() {
+      if (!state.pendingDelta) return;
+      state.reputation += state.pendingDelta.reputation || 0;
+      state.cash += state.pendingDelta.cash || 0;
+      state.morale += state.pendingDelta.morale || 0;
+      state.pendingDelta = null;
+      updateMeters();
+
+      if ([state.reputation, state.cash, state.morale].some(v => v <= 0)) {
+        endGame(true, "Your latest decision chain triggered immediate collapse.");
+        return;
+      }
+      state.currentRoundIndex += 1;
+      setScreen(el.meeting);
+      renderRound();
+    }
+
+    function endGame(collapsed, reasonText) {
+      state.ended = true;
       setScreen(el.final);
       const avg = Math.round((state.reputation + state.cash + state.morale) / 3);
-      el.finalText.textContent = avg >= 65
-        ? "You held the room together under pressure. The team sees you as decisive and credible."
-        : avg >= 45
-          ? "You kept the company alive, but fractures are visible. The next quarter will test your recovery strategy."
-          : "The meeting ends in survival mode. Immediate stabilization is required to avoid a deeper collapse.";
-      el.finalScores.textContent = `Final standing — Reputation ${state.reputation}, Cash ${state.cash}, Morale ${state.morale}.`;
-      alarmSound(180, .08);
+      if (collapsed) {
+        el.finalTitle.textContent = "Company Collapse";
+        el.finalText.textContent = `${reasonText} This session can fail early by design when shocks and choices compound.`;
+      } else if (avg >= 68) {
+        el.finalTitle.textContent = "Hard-Won Stabilization";
+        el.finalText.textContent = "You survived a punishing run with credible leadership under uncertainty.";
+      } else if (avg >= 45) {
+        el.finalTitle.textContent = "Fragile Survival";
+        el.finalText.textContent = "You kept the company alive, but a single bad quarter could break it.";
+      } else {
+        el.finalTitle.textContent = "Critical Condition";
+        el.finalText.textContent = "The company is technically standing, but one more crisis may end it.";
+      }
+      el.finalScores.textContent = `Final metrics — Reputation ${clamp(state.reputation)}, Cash ${clamp(state.cash)}, Morale ${clamp(state.morale)}.`;
+      alarmSound(160, 0.09);
     }
 
-    function nextRound() {
-      state.round += 1;
-      setScreen(el.meeting);
-      renderRound();
-    }
-
-    function resetGame() {
-      state.reputation = 65;
-      state.cash = 65;
-      state.morale = 65;
-      state.round = 0;
-      updateMeters();
+    function startGame(companyType) {
+      const cfg = companyConfigs[companyType];
+      state.companyType = companyType;
+      state.rounds = buildRun(companyType);
+      state.currentRoundIndex = 0;
+      state.reputation = cfg.start.reputation;
+      state.cash = cfg.start.cash;
+      state.morale = cfg.start.morale;
+      state.ended = false;
+      state.pendingDelta = null;
+      state.pendingNarrative = "";
+      state.previousScenarioTags = [];
       el.feed.innerHTML = "";
-      addFeed("Boardroom session started.");
-      setScreen(el.meeting);
+      el.companyLabel.textContent = `Company: ${cfg.label}`;
+      updateMeters();
+      addFeed(`${cfg.label} crisis session started.`);
       renderRound();
+      setScreen(el.meeting);
+    }
+
+    function goToMenu() {
+      state.ended = false;
+      state.pendingDelta = null;
+      state.currentRoundIndex = 0;
+      state.rounds = [];
+      el.feed.innerHTML = "";
+      setScreen(el.menu);
     }
 
     function updateClock() {
@@ -534,55 +1055,57 @@
     updateClock();
 
     setInterval(() => {
-      if (!el.meeting.classList.contains("active")) return;
+      if (!el.meeting.classList.contains("active") || state.ended || !state.companyType) return;
       const messages = [
-        "Investor text: 'Need updated guidance before market open.'",
-        "Newsroom ping: another reporter requesting comment.",
-        "Client escalation: procurement lead asks for founder callback.",
-        "Ops alert: support queue threshold exceeded.",
-        "Security monitor: suspicious login attempts increased."
+        "Investor text: 'Need revised guidance before next opening bell.'",
+        "Journalist follow-up: request for executive statement in 20 minutes.",
+        "Client escalation: steering committee asks for founder attendance.",
+        "Ops signal: support queue breach in premium accounts.",
+        "Security monitor: abnormal login velocity detected.",
+        "Board assistant: emergency memo waiting in your inbox."
       ];
-      const msg = messages[Math.floor(Math.random() * messages.length)];
-      addFeed(msg, true);
-      alarmSound(900, .02);
-    }, 11000);
+      addFeed(messages[Math.floor(Math.random() * messages.length)], true);
+      alarmSound(880, 0.02);
+    }, 9500);
 
-    // Audio
+    // Audio engine
     function initAudio() {
       if (state.audioReady) return;
       audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      ambienceGain = audioCtx.createGain();
-      musicGain = audioCtx.createGain();
-      ambienceGain.gain.value = 0;
-      musicGain.gain.value = 0;
-      ambienceGain.connect(audioCtx.destination);
-      musicGain.connect(audioCtx.destination);
+
+      noiseGain = audioCtx.createGain();
+      droneGain = audioCtx.createGain();
+      noiseGain.gain.value = 0;
+      droneGain.gain.value = 0;
+
+      noiseGain.connect(audioCtx.destination);
+      droneGain.connect(audioCtx.destination);
 
       const buffer = audioCtx.createBuffer(1, audioCtx.sampleRate * 2, audioCtx.sampleRate);
       const data = buffer.getChannelData(0);
-      for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1) * 0.08;
-      ambientSource = audioCtx.createBufferSource();
+      for (let i = 0; i < data.length; i += 1) data[i] = (Math.random() * 2 - 1) * 0.08;
+
+      noiseSource = audioCtx.createBufferSource();
       const filter = audioCtx.createBiquadFilter();
       filter.type = "bandpass";
-      filter.frequency.value = 340;
-      filter.Q.value = 0.9;
-      ambientSource.buffer = buffer;
-      ambientSource.loop = true;
-      ambientSource.connect(filter).connect(ambienceGain);
-      ambientSource.start();
+      filter.frequency.value = 320;
+      filter.Q.value = 1.2;
+      noiseSource.buffer = buffer;
+      noiseSource.loop = true;
+      noiseSource.connect(filter).connect(noiseGain);
+      noiseSource.start();
 
-      const musicOsc = audioCtx.createOscillator();
-      const musicLfo = audioCtx.createOscillator();
-      const musicLfoGain = audioCtx.createGain();
-      musicOsc.type = "triangle";
-      musicOsc.frequency.value = 118;
-      musicLfo.frequency.value = 0.16;
-      musicLfoGain.gain.value = 4;
-      musicLfo.connect(musicLfoGain);
-      musicLfoGain.connect(musicOsc.frequency);
-      musicOsc.connect(musicGain);
-      musicOsc.start();
-      musicLfo.start();
+      const droneOsc = audioCtx.createOscillator();
+      droneOsc.type = "triangle";
+      droneOsc.frequency.value = 96;
+      const droneLfo = audioCtx.createOscillator();
+      droneLfo.frequency.value = 0.14;
+      const lfoGain = audioCtx.createGain();
+      lfoGain.gain.value = 3.3;
+      droneLfo.connect(lfoGain).connect(droneOsc.frequency);
+      droneOsc.connect(droneGain);
+      droneOsc.start();
+      droneLfo.start();
 
       state.audioReady = true;
     }
@@ -591,13 +1114,16 @@
       state.soundOn = on;
       if (!state.audioReady && on) initAudio();
       if (state.audioReady) {
-        ambienceGain.gain.setTargetAtTime(on ? 0.18 : 0, audioCtx.currentTime, 0.3);
-        musicGain.gain.setTargetAtTime(on ? 0.03 : 0, audioCtx.currentTime, 0.3);
+        const t = audioCtx.currentTime;
+        noiseGain.gain.setTargetAtTime(on ? 0.14 : 0, t, 0.25);
+        droneGain.gain.setTargetAtTime(on ? 0.026 : 0, t, 0.28);
       }
       el.soundBtn.textContent = on ? "🔊 Sound: On" : "🔈 Sound: Off";
+      if (!on) stopTicking();
+      else if (el.meeting.classList.contains("active")) startTicking();
     }
 
-    function beep(freq = 700, duration = 0.07, vol = 0.06, type = "sine") {
+    function beep(freq = 700, duration = 0.07, vol = 0.05, type = "sine") {
       if (!state.soundOn || !state.audioReady) return;
       const osc = audioCtx.createOscillator();
       const gain = audioCtx.createGain();
@@ -610,14 +1136,48 @@
       osc.stop(audioCtx.currentTime + duration);
     }
 
-    function clickSound() { beep(840, 0.05, 0.05, "triangle"); }
-    function newsTone() { beep(630, 0.09, 0.05); setTimeout(() => beep(890, 0.12, 0.045), 80); }
-    function alarmSound(freq = 1020, vol = 0.04) { beep(freq, 0.08, vol, "square"); }
+    function tickSound(accent = false) {
+      const stress = (100 - state.reputation + 100 - state.cash + 100 - state.morale) / 3;
+      const baseVol = accent ? 0.04 : 0.025;
+      const vol = baseVol + (stress / 3500);
+      const freq = accent ? 1800 : 1300;
+      beep(freq, accent ? 0.021 : 0.015, vol, "square");
+    }
+
+    function scheduleTicks() {
+      if (!state.soundOn || !el.meeting.classList.contains("active") || state.ended) return;
+      const stress = (100 - state.reputation + 100 - state.cash + 100 - state.morale) / 3;
+      const interval = Math.max(300, 760 - stress * 3.2);
+      tickSound(false);
+      setTimeout(() => tickSound(true), Math.max(90, interval * 0.44));
+      state.tickTimer = setTimeout(scheduleTicks, interval);
+    }
+
+    function startTicking() {
+      if (!state.soundOn || !state.audioReady || state.tickTimer) return;
+      scheduleTicks();
+    }
+
+    function stopTicking() {
+      if (state.tickTimer) {
+        clearTimeout(state.tickTimer);
+        state.tickTimer = null;
+      }
+    }
+
+    function clickSound() { beep(840, 0.045, 0.045, "triangle"); }
+    function newsTone() { beep(620, 0.08, 0.042); setTimeout(() => beep(900, 0.11, 0.035), 70); }
+    function alarmSound(freq = 1000, vol = 0.04) { beep(freq, 0.075, vol, "square"); }
 
     // Controls
-    document.getElementById("backToMeeting").addEventListener("click", nextRound);
-    document.getElementById("restartBtn").addEventListener("click", resetGame);
-    document.getElementById("playAgain").addEventListener("click", resetGame);
+    document.querySelectorAll(".company-card").forEach(btn => {
+      btn.addEventListener("click", () => startGame(btn.dataset.company));
+    });
+
+    document.getElementById("backToMeeting").addEventListener("click", finalizeDecisionAndAdvance);
+    document.getElementById("restartBtn").addEventListener("click", goToMenu);
+    document.getElementById("playAgain").addEventListener("click", goToMenu);
+
     el.soundBtn.addEventListener("click", async () => {
       if (!state.audioReady) initAudio();
       if (audioCtx && audioCtx.state === "suspended") await audioCtx.resume();
@@ -628,11 +1188,11 @@
     document.body.addEventListener("pointerdown", async () => {
       if (!state.audioReady) initAudio();
       if (audioCtx && audioCtx.state === "suspended") {
-        try { await audioCtx.resume(); } catch (_) {}
+        try { await audioCtx.resume(); } catch (e) { }
       }
     }, { once: true });
 
-    resetGame();
+    goToMenu();
   </script>
 </body>
 </html>
